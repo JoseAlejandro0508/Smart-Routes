@@ -1,12 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Smart_Routes.Domain.Common;
 
-public abstract class BaseEntity
+/// <summary>
+/// Contrato no genérico para que la infraestructura pueda despachar los eventos de dominio
+/// sin importar el tipo de la clave primaria de la entidad.
+/// </summary>
+public interface IHasDomainEvents
 {
-    // This can easily be modified to be BaseEntity<T> and public T Id to support different key types.
-    // Using non-generic integer types for simplicity
-    public int Id { get; set; }
+    IReadOnlyCollection<BaseEvent> DomainEvents { get; }
+
+    void ClearDomainEvents();
+}
+
+/// <summary>
+/// Entidad base con clave primaria de tipo <typeparamref name="TKey"/> y soporte de eventos de dominio.
+/// </summary>
+public abstract class BaseEntity<TKey> : IHasDomainEvents
+{
+    public TKey Id { get; set; } = default!;
 
     private readonly List<BaseEvent> _domainEvents = new();
 
@@ -27,4 +39,11 @@ public abstract class BaseEntity
     {
         _domainEvents.Clear();
     }
+}
+
+/// <summary>
+/// Entidad base con clave primaria entera (el caso por defecto de la plantilla).
+/// </summary>
+public abstract class BaseEntity : BaseEntity<int>
+{
 }
