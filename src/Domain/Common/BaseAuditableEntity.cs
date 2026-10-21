@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Common;
 
 /// <summary>
-/// Contrato no genérico de auditoría, usado por el interceptor de EF para completar los campos.
+/// Non-generic auditing contract, used by the EF interceptor to fill in the audit fields.
 /// </summary>
 public interface IAuditableEntity
 {
@@ -15,7 +15,7 @@ public interface IAuditableEntity
 }
 
 /// <summary>
-/// Entidad auditable con clave primaria de tipo <typeparamref name="TKey"/>.
+/// Auditable entity with a primary key of type <typeparamref name="TKey"/>.
 /// </summary>
 public abstract class BaseAuditableEntity<TKey> : BaseEntity<TKey>, IAuditableEntity
 {
@@ -29,7 +29,7 @@ public abstract class BaseAuditableEntity<TKey> : BaseEntity<TKey>, IAuditableEn
 }
 
 /// <summary>
-/// Entidad auditable con clave primaria entera.
+/// Auditable entity with an integer primary key.
 /// </summary>
 public abstract class BaseAuditableEntity : BaseAuditableEntity<int>
 {

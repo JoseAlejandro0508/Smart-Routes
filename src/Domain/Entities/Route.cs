@@ -1,51 +1,52 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// RUTA. Itinerario de reparto planificado para una jornada.
+/// RUTA. Delivery itinerary planned for a working day.
 /// </summary>
+/// <remarks>
+/// The route status and validation date are not stored: they are derived from its latest
+/// <see cref="Review"/> (see <see cref="RouteStatus"/>).
+/// </remarks>
 public class Route : BaseAuditableEntity
 {
-    /// <summary>fecha_creacion.</summary>
+    /// <summary>Creation date (fecha_creacion).</summary>
     public DateTimeOffset CreationDate { get; set; }
 
-    /// <summary>fecha_programada (jornada de reparto).</summary>
+    /// <summary>Scheduled delivery day (fecha_programada), not earlier than the creation date.</summary>
     public DateOnly ScheduledDate { get; set; }
 
-    /// <summary>capacidad_vehiculo.</summary>
-    public decimal VehicleCapacity { get; set; }
+    /// <summary>Vehicle capacity in kg (capacidad_vehiculo_kg), greater than zero.</summary>
+    public decimal VehicleCapacityKg { get; set; }
 
-    /// <summary>estado_ruta.</summary>
-    public RouteStatus Status { get; set; } = RouteStatus.PendingApproval;
+    /// <summary>GENERA: coordinator who generated the route (id_coord_generador).</summary>
+    public string GeneratorCoordinatorId { get; set; } = string.Empty;
 
-    /// <summary>fecha_validacion (posterior a fecha_creacion).</summary>
-    public DateTimeOffset? ValidationDate { get; set; }
+    public LogisticsCoordinator GeneratorCoordinator { get; set; } = null!;
 
-    /// <summary>GENERA: coordinador que disparó la generación.</summary>
-    public string CoordinatorId { get; set; } = string.Empty;
-
-    public LogisticsCoordinator Coordinator { get; set; } = null!;
-
-    /// <summary>ORIGINADA_EN: centro desde el que parte el vehículo.</summary>
+    /// <summary>ORIGINADA_EN: center the route departs from (id_centro_ruta).</summary>
     public int DistributionCenterId { get; set; }
 
     public DistributionCenter DistributionCenter { get; set; } = null!;
 
-    /// <summary>REVISA_Y_APRUEBA: supervisor que valida (nullable hasta la revisión).</summary>
-    public string? SupervisorId { get; set; }
-
-    public OperationsSupervisor? Supervisor { get; set; }
-
-    /// <summary>EJECUTA: repartidor que la conduce (nullable hasta la asignación).</summary>
+    /// <summary>EJECUTA: delivery person assigned once the route is approved (null until then).</summary>
     public string? DeliveryPersonId { get; set; }
 
     public DeliveryPerson? DeliveryPerson { get; set; }
 
-    /// <summary>CONTIENE_PEDIDO: manifiesto de carga.</summary>
-    public IList<Order> Orders { get; private set; } = new List<Order>();
+    /// <summary>RECONFECCIONA: rejected review this route was built from (id_revision_origen); null for regular routes.</summary>
+    public int? OriginReviewId { get; set; }
 
-    /// <summary>RECORRE_PARADA: itinerario ordenado de paradas.</summary>
+    public Review? OriginReview { get; set; }
+
+    /// <summary>CONTIENE_PEDIDO: orders carried by the route (ITEM_RUTA).</summary>
+    public IList<RouteOrder> RouteOrders { get; private set; } = new List<RouteOrder>();
+
+    /// <summary>RECORRE_PARADA: ordered itinerary of stops.</summary>
     public IList<RouteStop> RouteStops { get; private set; } = new List<RouteStop>();
 
-    /// <summary>APLICA_CRITERIO: criterios aplicados con su configuración congelada.</summary>
-    public IList<RouteCriterion> RouteCriteria { get; private set; } = new List<RouteCriterion>();
+    /// <summary>APLICA_PARAMETRO: parameter values applied when generating the route (frozen configuration).</summary>
+    public IList<RouteParameter> RouteParameters { get; private set; } = new List<RouteParameter>();
+
+    /// <summary>EVALUA: review history of the route.</summary>
+    public IList<Review> Reviews { get; private set; } = new List<Review>();
 }

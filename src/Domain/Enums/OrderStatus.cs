@@ -1,14 +1,12 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// estado_pedido de PEDIDO. El informe solo exige un catálogo cerrado; estos valores
-/// siguen el ciclo de vida descrito en los requisitos y deben validarse con el equipo.
+/// Status of PEDIDO (estado_pedido): pending, in route, delivered or returned (3.2).
 /// </summary>
 public enum OrderStatus
 {
-    Registered = 0,
-    AssignedToRoute = 1,
+    Pending = 0,
+    InRoute = 1,
     Delivered = 2,
-    DeliveryFailed = 3,
-    ReturnedToWarehouse = 4
+    Returned = 3
 }

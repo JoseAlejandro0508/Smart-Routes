@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Smart_Routes.Domain.Common;
 
 /// <summary>
-/// Contrato no genérico para que la infraestructura pueda despachar los eventos de dominio
-/// sin importar el tipo de la clave primaria de la entidad.
+/// Non-generic contract so the infrastructure can dispatch domain events
+/// regardless of the entity's primary key type.
 /// </summary>
 public interface IHasDomainEvents
 {
@@ -14,7 +14,7 @@ public interface IHasDomainEvents
 }
 
 /// <summary>
-/// Entidad base con clave primaria de tipo <typeparamref name="TKey"/> y soporte de eventos de dominio.
+/// Base entity with a primary key of type <typeparamref name="TKey"/> and domain event support.
 /// </summary>
 public abstract class BaseEntity<TKey> : IHasDomainEvents
 {
@@ -42,7 +42,7 @@ public abstract class BaseEntity<TKey> : IHasDomainEvents
 }
 
 /// <summary>
-/// Entidad base con clave primaria entera (el caso por defecto de la plantilla).
+/// Base entity with an integer primary key (the template's default case).
 /// </summary>
 public abstract class BaseEntity : BaseEntity<int>
 {

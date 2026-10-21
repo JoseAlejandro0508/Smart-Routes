@@ -1,4 +1,5 @@
 using Smart_Routes.Domain.Entities;
+using Smart_Routes.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,12 +30,15 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(500)
             .IsRequired();
 
-        builder.Property(o => o.CoordinatorId)
+        builder.Property(o => o.WeightKg)
+            .HasPrecision(10, 2);
+
+        builder.Property(o => o.EntryCoordinatorId)
             .HasMaxLength(450);
 
-        builder.HasOne(o => o.Coordinator)
-            .WithMany(c => c.Orders)
-            .HasForeignKey(o => o.CoordinatorId)
+        builder.HasOne(o => o.EntryCoordinator)
+            .WithMany(c => c.EnteredOrders)
+            .HasForeignKey(o => o.EntryCoordinatorId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(o => o.DistributionCenter)
@@ -47,16 +51,15 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasForeignKey(o => o.StopId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(o => o.Route)
-            .WithMany(r => r.Orders)
-            .HasForeignKey(o => o.RouteId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Antiduplicados (RF-18). La combinación es la de ejemplo del informe (3.1):
-        // ajustarla cuando el administrador fije la regla de negocio definitiva.
-        builder.HasIndex(o => new { o.DistributionCenterId, o.StopId, o.DeliveryType, o.Description })
+        // Duplicate prevention (RF-17, 3.1): same center, stop, delivery type, description and entry day.
+        builder.HasIndex(o => new { o.DistributionCenterId, o.StopId, o.DeliveryType, o.Description, o.EntryDate })
             .IsUnique();
+
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("CK_Orders_WeightKg", "[WeightKg] > 0");
+            t.HasCheckConstraint("CK_Orders_DeadlineAt", "CAST([DeadlineAt] AS date) >= [EntryDate]");
+        });
     }
 }
 
@@ -68,10 +71,11 @@ public class DeliveryRecordConfiguration : IEntityTypeConfiguration<DeliveryReco
         builder.Property(d => d.Observations)
             .HasMaxLength(1000);
 
-        // 1:0..1 con PEDIDO: el índice único sobre OrderId lo genera EF por ser uno a uno.
-        builder.HasOne(d => d.Order)
-            .WithOne(o => o.DeliveryRecord)
-            .HasForeignKey<DeliveryRecord>(d => d.OrderId)
+        // Composite FK to RUTA_PEDIDO (3.4): attempts can only be recorded for orders that belong to the route.
+        // Being one-to-one, EF creates the unique index on (RouteId, OrderId) required by 3.1.
+        builder.HasOne(d => d.RouteOrder)
+            .WithOne(ro => ro.DeliveryRecord)
+            .HasForeignKey<DeliveryRecord>(d => new { d.RouteId, d.OrderId })
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
@@ -85,30 +89,31 @@ public class ReschedulingConfiguration : IEntityTypeConfiguration<Rescheduling>
             .HasMaxLength(500)
             .IsRequired();
 
-        builder.Property(r => r.DeliveryPersonId)
+        builder.Property(r => r.ResolverCoordinatorId)
             .HasMaxLength(450);
 
-        builder.Property(r => r.CoordinatorId)
-            .HasMaxLength(450);
-
-        // 1:0..1 con REGISTRO_ENTREGA: cada entrega genera como máximo una reprogramación.
-        builder.HasOne(r => r.DeliveryRecord)
-            .WithOne(d => d.Rescheduling)
-            .HasForeignKey<Rescheduling>(r => r.DeliveryRecordId)
+        // Composite FK to RUTA_PEDIDO; unique, so at most one request per order-in-route (3.1).
+        builder.HasOne(r => r.RouteOrder)
+            .WithOne(ro => ro.Rescheduling)
+            .HasForeignKey<Rescheduling>(r => new { r.RouteId, r.OrderId })
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(r => r.DeliveryPerson)
-            .WithMany(d => d.RequestedReschedulings)
-            .HasForeignKey(r => r.DeliveryPersonId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(r => r.Coordinator)
+        builder.HasOne(r => r.ResolverCoordinator)
             .WithMany(c => c.AssignedReschedulings)
-            .HasForeignKey(r => r.CoordinatorId)
+            .HasForeignKey(r => r.ResolverCoordinatorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable(t => t.HasCheckConstraint(
-            "CK_Reschedulings_ResolutionDate",
-            "[ResolutionDate] IS NULL OR [ResolutionDate] > [RequestDate]"));
+        var resolved = (int)ReschedulingStatus.Resolved;
+
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint(
+                "CK_Reschedulings_Resolution",
+                $"([Status] = {resolved} AND [ManualResult] IS NOT NULL AND [ResolutionDate] IS NOT NULL) OR " +
+                $"([Status] <> {resolved} AND [ManualResult] IS NULL AND [ResolutionDate] IS NULL)");
+            t.HasCheckConstraint(
+                "CK_Reschedulings_ResolutionDate",
+                "[ResolutionDate] IS NULL OR [ResolutionDate] > [RequestDate]");
+        });
     }
 }

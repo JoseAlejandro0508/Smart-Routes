@@ -36,7 +36,15 @@ public interface IApplicationDbContext
 
     DbSet<RouteStop> RouteStops { get; }
 
-    DbSet<RouteCriterion> RouteCriteria { get; }
+    DbSet<BalanceParameter> BalanceParameters { get; }
+
+    DbSet<RouteOrder> RouteOrders { get; }
+
+    DbSet<RouteParameter> RouteParameters { get; }
+
+    DbSet<Review> Reviews { get; }
+
+    DbSet<ReviewParameter> ReviewParameters { get; }
 
     DbSet<DeliveryRecord> DeliveryRecords { get; }
 

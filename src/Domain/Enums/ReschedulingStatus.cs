@@ -1,8 +1,8 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// estado_solicitud de REPROGRAMACION. El informe solo exige un catálogo cerrado;
-/// valores a validar con el equipo.
+/// Request status of REPROGRAMACION (estado_solicitud). The report only requires a closed set of values;
+/// these values must be validated with the team.
 /// </summary>
 public enum ReschedulingStatus
 {

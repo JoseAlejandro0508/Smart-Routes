@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// prioridad de PEDIDO: Baja, Media o Urgente (RF-07).
+/// Priority of PEDIDO: low, medium or urgent (RF-07).
 /// </summary>
 public enum OrderPriority
 {

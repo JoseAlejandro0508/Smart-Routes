@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// REPARTIDOR_CENTRO (interrelación N:M ASIGNADO_A). PK compuesta (id_repartidor, id_centro).
+/// REPARTIDOR_CENTRO (N:M relationship ASIGNADO_A). Composite PK (id_repartidor, id_centro).
 /// </summary>
 public class DeliveryPersonCenter
 {

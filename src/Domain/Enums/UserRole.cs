@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// tipo_rol de USUARIO: determina en qué tabla subtipo tiene su fila el usuario.
+/// Role type of USUARIO (tipo_rol): determines which subtype table holds the user's row.
 /// </summary>
 public enum UserRole
 {

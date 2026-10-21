@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// RUTA_PARADA (interrelación N:M RECORRE_PARADA). PK compuesta (id_ruta, id_parada).
+/// RUTA_PARADA (N:M relationship RECORRE_PARADA). Composite PK (id_ruta, id_parada).
 /// </summary>
 public class RouteStop
 {
@@ -13,6 +13,6 @@ public class RouteStop
 
     public Stop Stop { get; set; } = null!;
 
-    /// <summary>orden_visita: no se repite dentro de una misma ruta.</summary>
+    /// <summary>orden_visita: unique within a single route.</summary>
     public int VisitOrder { get; set; }
 }

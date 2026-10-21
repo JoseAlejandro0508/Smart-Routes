@@ -1,19 +1,24 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// CRITERIO_EQUILIBRIO. Regla de balanceo usada por el generador de rutas.
+/// CRITERIO_EQUILIBRIO. Balancing rule used by the route generator, made up of parameters.
 /// </summary>
 public class BalanceCriterion : BaseAuditableEntity
 {
-    /// <summary>nombre_criterio.</summary>
+    /// <summary>Criterion name (nombre_criterio).</summary>
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>descripcion_criterio.</summary>
+    /// <summary>Criterion description (descripcion_criterio).</summary>
     public string? Description { get; set; }
 
-    /// <summary>es_preestablecido: true si es del sistema, false si lo definió un coordinador.</summary>
-    public bool IsPredefined { get; set; }
+    /// <summary>DEFINE: coordinator who authored the criterion (id_coord_autor); null for predefined criteria.</summary>
+    public string? AuthorCoordinatorId { get; set; }
 
-    /// <summary>APLICA_CRITERIO: rutas que aplicaron este criterio.</summary>
-    public IList<RouteCriterion> RouteCriteria { get; private set; } = new List<RouteCriterion>();
+    public LogisticsCoordinator? AuthorCoordinator { get; set; }
+
+    /// <summary>A criterion is predefined when it has no author. Derived, so it is not stored.</summary>
+    public bool IsPredefined => AuthorCoordinatorId is null;
+
+    /// <summary>PERTENECE_A: parameters that make up the criterion.</summary>
+    public IList<BalanceParameter> Parameters { get; private set; } = new List<BalanceParameter>();
 }

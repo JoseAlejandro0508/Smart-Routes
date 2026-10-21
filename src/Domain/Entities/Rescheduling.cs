@@ -1,37 +1,39 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// REPROGRAMACION. Expediente abierto cuando una entrega falla.
+/// REPROGRAMACION. Virtual request to reschedule the delivery of an order within a route,
+/// and its manual resolution by a coordinator.
 /// </summary>
+/// <remarks>
+/// It does not require a failed delivery record: the request can be made in advance.
+/// The requesting delivery person is the one who drives the route, so it is not stored.
+/// </remarks>
 public class Rescheduling : BaseAuditableEntity
 {
-    /// <summary>fecha_solicitud.</summary>
+    /// <summary>Request date (fecha_solicitud).</summary>
     public DateTimeOffset RequestDate { get; set; }
 
-    /// <summary>motivo.</summary>
+    /// <summary>Reason (motivo).</summary>
     public string Reason { get; set; } = string.Empty;
 
-    /// <summary>estado_solicitud.</summary>
+    /// <summary>Request status (estado_solicitud).</summary>
     public ReschedulingStatus Status { get; set; } = ReschedulingStatus.Pending;
 
-    /// <summary>resultado_manual (se completa al resolver).</summary>
+    /// <summary>Manual result (resultado_manual); not null if and only if the request is resolved.</summary>
     public ManualResolution? ManualResult { get; set; }
 
-    /// <summary>fecha_resolucion (posterior a fecha_solicitud).</summary>
+    /// <summary>Resolution date (fecha_resolucion); not null if and only if resolved, and later than the request date.</summary>
     public DateTimeOffset? ResolutionDate { get; set; }
 
-    /// <summary>REQUIERE: entrega fallida que la origina (única).</summary>
-    public int DeliveryRecordId { get; set; }
+    /// <summary>AFECTA: (id_ruta, id_pedido) of the order-in-route; unique, so at most one request per order-in-route.</summary>
+    public int RouteId { get; set; }
 
-    public DeliveryRecord DeliveryRecord { get; set; } = null!;
+    public int OrderId { get; set; }
 
-    /// <summary>SOLICITA: repartidor que emite la solicitud.</summary>
-    public string DeliveryPersonId { get; set; } = string.Empty;
+    public RouteOrder RouteOrder { get; set; } = null!;
 
-    public DeliveryPerson DeliveryPerson { get; set; } = null!;
+    /// <summary>RESUELVE: coordinator chosen to resolve the request (id_coord_resolutor).</summary>
+    public string ResolverCoordinatorId { get; set; } = string.Empty;
 
-    /// <summary>RESUELVE: coordinador elegido para el dictamen manual.</summary>
-    public string CoordinatorId { get; set; } = string.Empty;
-
-    public LogisticsCoordinator Coordinator { get; set; } = null!;
+    public LogisticsCoordinator ResolverCoordinator { get; set; } = null!;
 }

@@ -1,13 +1,13 @@
 namespace Smart_Routes.Domain.Common;
 
 /// <summary>
-/// Base de los subtipos de la jerarquía ISA total y disjunta de USUARIO
+/// Base class for the subtypes of the total, disjoint ISA hierarchy of USUARIO
 /// (COORDINADOR_LOGISTICO, REPARTIDOR, SUPERVISOR_OPERACIONES, ADMINISTRADOR).
 /// </summary>
 /// <remarks>
-/// La superentidad USUARIO es el usuario de ASP.NET Identity (vive en Infrastructure).
-/// El <see cref="BaseEntity{TKey}.Id"/> de cada subtipo es a la vez clave primaria y clave
-/// foránea hacia USUARIO, por eso es <see cref="string"/>: coincide con el Id de Identity.
+/// The USUARIO superentity is the ASP.NET Identity user (it lives in Infrastructure).
+/// Each subtype's <see cref="BaseEntity{TKey}.Id"/> is both the primary key and a foreign
+/// key to USUARIO, which is why it is a <see cref="string"/>: it matches the Identity user Id.
 /// </remarks>
 public abstract class BaseUserProfile : BaseAuditableEntity<string>
 {

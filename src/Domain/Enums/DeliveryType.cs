@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// tipo_entrega de PEDIDO: Paquetería, Documentos o Perecederos (RF-07).
+/// Delivery type of PEDIDO: parcel, documents or perishable (RF-07).
 /// </summary>
 public enum DeliveryType
 {

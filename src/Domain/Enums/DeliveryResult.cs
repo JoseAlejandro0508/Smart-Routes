@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// resultado de REGISTRO_ENTREGA: exitoso o fallido.
+/// Result of REGISTRO_ENTREGA: successful or failed.
 /// </summary>
 public enum DeliveryResult
 {

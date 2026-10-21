@@ -1,49 +1,50 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// PEDIDO. Unidad de transporte que ingresa un coordinador y luego se asigna a una ruta.
+/// PEDIDO. Shipping unit entered by a coordinator and classified by delivery type and priority.
 /// </summary>
 /// <remarks>
-/// La zona del pedido (DESTINADO_A) no se almacena: se deduce a través de <see cref="Stop"/>
-/// porque f18 es una dependencia transitiva (3FN).
+/// The order's zone is not stored: it is derived through <see cref="Stop"/> (ENTREGA_EN + LOCALIZADA_EN).
+/// An order can appear in several routes (CONTIENE_PEDIDO is N:M), e.g. after a failed delivery is rescheduled.
 /// </remarks>
 public class Order : BaseAuditableEntity
 {
-    /// <summary>descripcion.</summary>
+    /// <summary>Description (descripcion).</summary>
     public string Description { get; set; } = string.Empty;
 
-    /// <summary>tipo_entrega.</summary>
+    /// <summary>Delivery type (tipo_entrega).</summary>
     public DeliveryType DeliveryType { get; set; }
 
-    /// <summary>prioridad.</summary>
+    /// <summary>Priority (prioridad).</summary>
     public OrderPriority Priority { get; set; }
 
-    /// <summary>fecha_ingreso.</summary>
-    public DateTimeOffset EntryDate { get; set; }
+    /// <summary>Weight in kg (peso_kg), greater than zero.</summary>
+    public decimal WeightKg { get; set; }
 
-    /// <summary>estado_pedido.</summary>
-    public OrderStatus Status { get; set; } = OrderStatus.Registered;
+    /// <summary>Entry day (fecha_ingreso). A date without time, because it is part of the duplicate-prevention key.</summary>
+    public DateOnly EntryDate { get; set; }
 
-    /// <summary>INGRESA: coordinador que dio de alta el pedido.</summary>
-    public string CoordinatorId { get; set; } = string.Empty;
+    /// <summary>Delivery deadline (fecha_hora_limite), not earlier than the entry day.</summary>
+    public DateTimeOffset DeadlineAt { get; set; }
 
-    public LogisticsCoordinator Coordinator { get; set; } = null!;
+    /// <summary>Order status (estado_pedido).</summary>
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
-    /// <summary>RADICADO_EN: centro que custodia el pedido.</summary>
+    /// <summary>INGRESA: coordinator who entered the order (id_coord_ingreso).</summary>
+    public string EntryCoordinatorId { get; set; } = string.Empty;
+
+    public LogisticsCoordinator EntryCoordinator { get; set; } = null!;
+
+    /// <summary>RADICADO_EN: center that holds the order (id_centro_pedido).</summary>
     public int DistributionCenterId { get; set; }
 
     public DistributionCenter DistributionCenter { get; set; } = null!;
 
-    /// <summary>ENTREGA_EN: parada de destino.</summary>
+    /// <summary>ENTREGA_EN: destination stop.</summary>
     public int StopId { get; set; }
 
     public Stop Stop { get; set; } = null!;
 
-    /// <summary>CONTIENE_PEDIDO: ruta que lo transporta (nullable hasta asignarse).</summary>
-    public int? RouteId { get; set; }
-
-    public Route? Route { get; set; }
-
-    /// <summary>ORIGINA: registro de la entrega del pedido (0..1).</summary>
-    public DeliveryRecord? DeliveryRecord { get; set; }
+    /// <summary>CONTIENE_PEDIDO: routes that carry this order.</summary>
+    public IList<RouteOrder> RouteOrders { get; private set; } = new List<RouteOrder>();
 }

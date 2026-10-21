@@ -12,7 +12,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
         builder.Property(u => u.Name)
             .HasMaxLength(200);
 
-        // El email es único porque sirve de credencial de acceso (3.1).
+        // Email is unique because it is used as the login credential (3.1).
         builder.HasIndex(u => u.Email)
             .IsUnique()
             .HasFilter("[Email] IS NOT NULL");

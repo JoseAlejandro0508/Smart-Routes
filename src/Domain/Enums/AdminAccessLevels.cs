@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// nivel_acceso de ADMINISTRADOR.
+/// Access level of ADMINISTRADOR (nivel_acceso).
 /// </summary>
 public enum AdminAccessLevels
 {

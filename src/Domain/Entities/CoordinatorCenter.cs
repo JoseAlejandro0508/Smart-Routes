@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// COORDINADOR_CENTRO (interrelación N:M AUTORIZADO_EN). PK compuesta (id_coordinador, id_centro).
+/// COORDINADOR_CENTRO (N:M relationship AUTORIZADO_EN). Composite PK (id_coordinador, id_centro).
 /// </summary>
 public class CoordinatorCenter
 {

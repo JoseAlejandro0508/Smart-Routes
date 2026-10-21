@@ -1,8 +1,8 @@
 namespace Smart_Routes.Domain.Enums;
 
 /// <summary>
-/// resultado_manual de REPROGRAMACION: el coordinador reasigna, reprograma
-/// o devuelve el paquete al almacén.
+/// Manual result of REPROGRAMACION: the coordinator reassigns, reschedules
+/// or returns the package to the warehouse.
 /// </summary>
 public enum ManualResolution
 {

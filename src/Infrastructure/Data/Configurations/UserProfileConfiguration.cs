@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Smart_Routes.Infrastructure.Data.Configurations;
 
 /// <summary>
-/// Configuración común a los subtipos de USUARIO: la clave primaria es a la vez clave foránea
-/// hacia la tabla de usuarios de Identity (relación 1:1 de la jerarquía ISA).
+/// Shared configuration for the USUARIO subtypes: the primary key is also a foreign key
+/// to the Identity users table (1:1 relationship of the ISA hierarchy).
 /// </summary>
 public abstract class UserProfileConfiguration<TProfile> : IEntityTypeConfiguration<TProfile>
     where TProfile : BaseUserProfile
@@ -20,7 +20,7 @@ public abstract class UserProfileConfiguration<TProfile> : IEntityTypeConfigurat
             .HasMaxLength(450)
             .ValueGeneratedNever();
 
-        // Los usuarios no se eliminan, se desactivan (sección 3.4).
+        // Users are never deleted, only deactivated (section 3.4).
         builder.HasOne<ApplicationUser>()
             .WithOne()
             .HasForeignKey<TProfile>(p => p.Id)

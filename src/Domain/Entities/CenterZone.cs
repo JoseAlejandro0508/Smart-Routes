@@ -1,7 +1,7 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// CENTRO_ZONA (interrelación N:M CUBRE). PK compuesta (id_centro, id_zona).
+/// CENTRO_ZONA (N:M relationship CUBRE). Composite PK (id_centro, id_zona).
 /// </summary>
 public class CenterZone
 {

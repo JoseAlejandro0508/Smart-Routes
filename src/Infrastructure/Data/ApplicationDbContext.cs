@@ -43,7 +43,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     public DbSet<RouteStop> RouteStops => Set<RouteStop>();
 
-    public DbSet<RouteCriterion> RouteCriteria => Set<RouteCriterion>();
+    public DbSet<BalanceParameter> BalanceParameters => Set<BalanceParameter>();
+
+    public DbSet<RouteOrder> RouteOrders => Set<RouteOrder>();
+
+    public DbSet<RouteParameter> RouteParameters => Set<RouteParameter>();
+
+    public DbSet<Review> Reviews => Set<Review>();
+
+    public DbSet<ReviewParameter> ReviewParameters => Set<ReviewParameter>();
 
     public DbSet<DeliveryRecord> DeliveryRecords => Set<DeliveryRecord>();
 

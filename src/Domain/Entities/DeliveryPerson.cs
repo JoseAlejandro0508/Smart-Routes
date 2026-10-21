@@ -1,25 +1,23 @@
 namespace Smart_Routes.Domain.Entities;
 
 /// <summary>
-/// REPARTIDOR (subtipo de USUARIO). Conduce el vehículo y ejecuta las entregas de la ruta asignada.
+/// REPARTIDOR (subtype of USUARIO). Drives the vehicle and makes the deliveries on the assigned route.
 /// </summary>
+/// <remarks>
+/// Availability is transient operational state kept in the key-value store (4.5), not here.
+/// The delivery person who requests a rescheduling is derived from the route (EJECUTA), not stored.
+/// </remarks>
 public class DeliveryPerson : BaseUserProfile
 {
-    /// <summary>edad (entero positivo).</summary>
-    public int Age { get; set; }
+    /// <summary>Date of birth. The report stores edad (age at least 18); age is derived from this date.</summary>
+    public DateOnly DateOfBirth { get; set; }
 
-    /// <summary>flota a la que pertenece.</summary>
+    /// <summary>Fleet the delivery person belongs to (flota).</summary>
     public string Fleet { get; set; } = string.Empty;
 
-    /// <summary>estado_disponibilidad.</summary>
-    public DeliveryPersonState AvailabilityState { get; set; } = DeliveryPersonState.Available;
-
-    /// <summary>ASIGNADO_A: centros en los que está habilitado para recibir asignaciones.</summary>
+    /// <summary>ASIGNADO_A: centers where the delivery person can receive routes.</summary>
     public IList<DeliveryPersonCenter> AssignedCenters { get; private set; } = new List<DeliveryPersonCenter>();
 
-    /// <summary>EJECUTA: rutas que conduce.</summary>
+    /// <summary>EJECUTA: routes the delivery person drives.</summary>
     public IList<Route> Routes { get; private set; } = new List<Route>();
-
-    /// <summary>SOLICITA: reprogramaciones solicitadas desde el terreno.</summary>
-    public IList<Rescheduling> RequestedReschedulings { get; private set; } = new List<Rescheduling>();
 }
