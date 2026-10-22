@@ -1,0 +1,949 @@
+\documentclass[11pt,a4paper]{article}
+
+% ------------------------------------------------------------
+% Paquetes
+% ------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage[hidelinks]{hyperref}
+
+\onehalfspacing
+\setlength{\emergencystretch}{3em}
+\usepackage{xurl}
+\sloppy
+\setlength{\parskip}{0.4em}
+
+% ------------------------------------------------------------
+% Datos del equipo (editar aquí)
+% ------------------------------------------------------------
+\newcommand{\NombreEquipo}{Digimons}
+\newcommand{\IntegranteA}{José Alejandro Albanés Febles}
+\newcommand{\IntegranteB}{Manuel Enrique Cardoso Martínez}
+\newcommand{\IntegranteC}{Jorge Luis Herrera Cecilia}
+\newcommand{\IntegranteD}{Leonardo Peláez Ascención}
+\newcommand{\IntegranteE}{Karla Díaz Saura}
+\newcommand{\Repositorio}{https://github.com/JoseAlejandro0508/Smart-Routes}
+
+% ------------------------------------------------------------
+% Estilos
+% ------------------------------------------------------------
+\definecolor{azul}{RGB}{31,78,121}
+\definecolor{gris}{RGB}{110,110,110}
+\definecolor{fondo}{RGB}{246,246,246}
+\definecolor{verde}{RGB}{46,125,50}
+\definecolor{rojo}{RGB}{183,28,28}
+
+\titleformat{\section}{\Large\bfseries\color{azul}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{azul}}{\thesubsection.}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection.}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gris}Seminario de Arquitecturas de Software}
+\fancyhead[R]{\small\color{gris}Equipo \NombreEquipo}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\lstdefinestyle{csharp}{
+  language=[Sharp]C,
+  backgroundcolor=\color{fondo},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{azul}\bfseries,
+  commentstyle=\color{verde}\itshape,
+  stringstyle=\color{rojo},
+  numbers=left,
+  numberstyle=\tiny\color{gris},
+  frame=single,
+  rulecolor=\color{gris!50},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=b,
+  morekeywords={var,async,await,Task,record,init,required}
+}
+\lstset{style=csharp}
+\renewcommand{\lstlistingname}{Listado}
+
+\captionsetup{font=small,labelfont=bf}
+
+\tikzset{
+  caja/.style={draw, rounded corners=2pt, minimum width=3.2cm, minimum height=0.9cm, align=center, font=\small},
+  dep/.style={-{Stealth[length=2.5mm]}, thick},
+  depdash/.style={-{Stealth[length=2.5mm]}, thick, dashed},
+  impl/.style={-{Triangle[open,length=3mm]}, thick, dashed},
+}
+
+\newenvironment{idea}{\begin{center}\begin{tabular}{|p{0.92\textwidth}|}\hline\vspace{0.1em}}{\\\hline\end{tabular}\end{center}}
+
+% ------------------------------------------------------------
+\begin{document}
+
+% ============================================================
+% PORTADA
+% ============================================================
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+{\large Ingeniería de Software}\\[2.5cm]
+
+{\color{azul}\rule{\textwidth}{1.2pt}}\\[0.4cm]
+{\LARGE\bfseries Seminario de Arquitecturas de Software:\\[0.2cm]
+Un Análisis Comparativo de Estilos Basados en Capas y Dominio}\\[0.3cm]
+{\color{azul}\rule{\textwidth}{1.2pt}}\\[1.5cm]
+
+{\Large Equipo: \textbf{\NombreEquipo}}\\[1.5cm]
+\end{center}
+
+\noindent\textbf{Integrantes y contribución individual}\\[0.3cm]
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Integrante} & \textbf{Pregunta(s) trabajada(s)} \\
+\midrule
+\IntegranteA & Pregunta 1. Análisis de \emph{trade-offs} (N-Capas vs. Clean/Onion/Hexagonal); Pregunta 4. Inversión de dependencias en la práctica \\
+\IntegranteB & Pregunta 2. Simetría del hexágono vs. jerarquía de las capas \\
+\IntegranteC & Pregunta 3. DDD y \emph{Bounded Context} en un dominio de seguros \\
+\IntegranteD & Pregunta 5. El \emph{Kitty Problem} y el Principio Abierto/Cerrado \\
+\IntegranteE & Pregunta 6. N-Capas frente a requisitos de atributos de calidad \\
+\midrule
+Todo el equipo & Introducción, conclusiones, revisión cruzada de las respuestas y bibliografía \\
+\bottomrule
+\end{tabularx}
+
+\vfill
+\noindent\textbf{Repositorio del proyecto:} \url{\Repositorio}
+
+\vspace{1cm}
+\begin{center}
+\today
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introducción}
+% ============================================================
+
+La arquitectura de un sistema no es otra cosa que el conjunto de decisiones que, una vez tomadas, resultan más costosas de revertir. Por esa razón, elegir cómo se organizan las dependencias entre los distintos componentes condiciona la facilidad con la que el sistema podrá probarse, desplegarse y, sobre todo, evolucionar. Richards y Ford (2020, cap. 2) lo resumen en lo que llaman la \emph{Primera Ley de la Arquitectura de Software}: todo en arquitectura es un compromiso (\emph{trade-off}). No existe un estilo ``correcto'' en abstracto, sino estilos más o menos adecuados para un conjunto concreto de atributos de calidad.
+
+En este seminario se estudian cinco enfoques que comparten la idea de organizar el software en capas, pero que difieren radicalmente en \emph{hacia dónde apuntan las dependencias} y en \emph{qué se coloca en el centro} del sistema:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item La \textbf{Arquitectura N-Capas tradicional}, organizada en capas horizontales (presentación, negocio, persistencia, base de datos) con dependencias de arriba hacia abajo (Richards, 2015, pp. 1--2).
+  \item La \textbf{Arquitectura Hexagonal} o de \textbf{Puertos y Adaptadores}, que separa el interior de la aplicación de cualquier agente externo (Cockburn, 2005).
+  \item La \textbf{Arquitectura Cebolla} (\emph{Onion}), en la que el Modelo de Dominio ocupa el centro y todo el acoplamiento se dirige hacia él (Palermo, 2008a).
+  \item La \textbf{Arquitectura Limpia} (\emph{Clean Architecture}), que integra las anteriores bajo la \emph{Regla de Dependencia} (Martin, 2017, p. 203).
+  \item El \textbf{Diseño Guiado por el Dominio} (DDD), que aporta el vocabulario y los patrones para modelar aquello que las arquitecturas anteriores intentan proteger (Evans, 2003; De la Torre et al., 2010, pp. 41--43).
+\end{itemize}
+
+El documento se estructura en seis secciones, una por cada pregunta planteada en la orientación del seminario. En cada una se combinan los conceptos de la bibliografía con un caso práctico, ejemplos de código y diagramas elaborados por el equipo. Al final se presentan unas conclusiones generales que integran lo analizado.
+
+% ============================================================
+\section{Pregunta 1. Análisis de \emph{trade-offs}: N-Capas frente a Clean, Onion y Hexagonal}
+% ============================================================
+
+\subsection{Situación planteada}
+
+Un equipo eligió una arquitectura N-Capas para un sistema de gestión de inventario por ser simple y conocida. Un año después el sistema es un monolito difícil de mantener: los cambios en la base de datos se propagan a la lógica de negocio y a la interfaz de usuario, y las pruebas unitarias son lentas y frágiles.
+
+Conviene reconocer primero que la decisión inicial no fue absurda. Richards y Ford (2020, cap. 10) señalan que el estilo en capas es una buena elección para aplicaciones pequeñas, con presupuesto ajustado o cuando todavía no se sabe qué estilo convendrá, precisamente por su simplicidad y bajo coste. El problema aparece cuando el sistema crece: en ese momento, según los mismos autores, la mantenibilidad, la agilidad, la testabilidad y la facilidad de despliegue se ven afectadas negativamente.
+
+\subsection{El error fundamental de acoplamiento}
+
+El error de fondo es que \textbf{la lógica de negocio depende, en tiempo de compilación, de la capa de acceso a datos}. En una arquitectura N-Capas clásica, cada capa depende de la que tiene debajo: la presentación conoce al negocio, el negocio conoce a la persistencia y la persistencia conoce a la base de datos. Palermo (2008a) identifica justamente este punto como ``el mayor infractor'': el acoplamiento de la interfaz y de la lógica de negocio con el acceso a datos. Y añade una observación que explica por qué los cambios en la base de datos llegan hasta la interfaz: \emph{las dependencias transitivas siguen siendo dependencias}. Si la interfaz depende del negocio y el negocio depende del acceso a datos, la interfaz también depende, indirectamente, del acceso a datos.
+
+En el sistema de inventario esto se manifiesta de forma concreta: una clase como \texttt{ServicioInventario} importa directamente un \texttt{ProductoDAO} que trabaja con \texttt{SqlConnection}, recibe filas o entidades generadas por el ORM y las devuelve tal cual hacia la presentación. Martin (2017, p. 278) califica esta práctica como un error arquitectónico, porque acopla los casos de uso, las reglas de negocio e incluso la interfaz a la estructura relacional de los datos.
+
+Además, Richards y Ford (2020, cap. 10) explican que la arquitectura en capas está \emph{particionada técnicamente}: el dominio ``inventario'' queda repartido entre todas las capas, de modo que un cambio en una regla de negocio obliga a tocar varias de ellas. A ello se suma lo que Cockburn (2005) describe como el problema de que la gente ``no se toma en serio las líneas'' del dibujo en capas: no hay ningún mecanismo que impida que la lógica de negocio se filtre a través de las fronteras.
+
+La Figura~\ref{fig:p1-dependencias} resume la diferencia en la dirección de las dependencias.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=0.7cm]
+  % N-Capas
+  \node[caja, fill=gray!10] (ui) {Presentación};
+  \node[caja, fill=gray!10, below=of ui] (neg) {Negocio\\\footnotesize(ServicioInventario)};
+  \node[caja, fill=gray!10, below=of neg] (dat) {Acceso a datos\\\footnotesize(ProductoDAO + SQL)};
+  \node[caja, fill=gray!25, below=of dat] (bd) {SQL Server};
+  \draw[dep] (ui) -- (neg);
+  \draw[dep] (neg) -- (dat);
+  \draw[dep] (dat) -- (bd);
+  \node[above=0.3cm of ui, font=\bfseries\small] {a) N-Capas tradicional};
+
+  % Limpia
+  \begin{scope}[xshift=8cm]
+    \node[caja, fill=azul!10] (uc) {Casos de uso\\\footnotesize(RegistrarEntrada)};
+    \node[caja, fill=azul!25, below=of uc] (ent) {Entidades\\\footnotesize(Producto, Stock)};
+    \node[caja, fill=azul!5, below=of ent, minimum width=3.6cm] (port) {Puerto \texttt{IRepositorioProductos}\\\footnotesize(interfaz en el núcleo)};
+    \node[caja, fill=gray!10, left=0.6cm of port, minimum width=2.2cm, yshift=-1.6cm] (sql) {Adaptador\\SQL Server};
+    \node[caja, fill=gray!10, right=0.6cm of port, minimum width=2.2cm, yshift=-1.6cm] (mongo) {Adaptador\\MongoDB};
+    \node[caja, fill=gray!10, above=of uc] (ctrl) {Controlador / UI};
+    \draw[dep] (ctrl) -- (uc);
+    \draw[dep] (uc) -- (ent);
+    \draw[dep] (uc.east) to[bend left=40] (port.east);
+    \draw[impl] (sql.north) -- (port.south west);
+    \draw[impl] (mongo.north) -- (port.south east);
+    \node[above=0.3cm of ctrl, font=\bfseries\small] {b) Regla de Dependencia};
+  \end{scope}
+\end{tikzpicture}
+\caption{Dirección de las dependencias de código fuente. En (a) el negocio depende de la tecnología de datos; en (b) los adaptadores de infraestructura dependen de una abstracción definida en el núcleo. Elaboración propia a partir de Martin (2017, pp. 203--206) y Palermo (2008c).}
+\label{fig:p1-dependencias}
+\end{figure}
+
+\subsection{Cómo lo resuelve la Regla de Dependencia de Martin}
+
+Martin (2017, p. 203) formula la Regla de Dependencia así: \emph{las dependencias de código fuente solo deben apuntar hacia adentro, hacia las políticas de más alto nivel}. Nada de un círculo interno puede conocer nada de un círculo externo; ni siquiera el nombre de una clase, función o variable declarada fuera. Esto incluye los formatos de datos: un círculo interno no debe recibir estructuras definidas por un \emph{framework} externo (Martin, 2017, p. 204).
+
+Aplicado al inventario, la reestructuración consiste en:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Colocar en el centro las \textbf{entidades} (\texttt{Producto}, \texttt{Almacen}, \texttt{MovimientoStock}) con sus reglas críticas, como ``no puede haber stock negativo''.
+  \item Rodearlas de los \textbf{casos de uso} (\texttt{RegistrarEntrada}, \texttt{TransferirStock}), que orquestan las entidades.
+  \item Declarar en esa capa interna las \textbf{interfaces} que el caso de uso necesita, por ejemplo \texttt{IRepositorioProductos}.
+  \item Mover la implementación concreta (\texttt{RepositorioProductosSql}) a la capa de \textbf{adaptadores de interfaz}, que es la única que conoce SQL (Martin, 2017, p. 205).
+\end{enumerate}
+
+El flujo de control sigue yendo del caso de uso a la base de datos, pero la dependencia de código fuente se \emph{invierte}: el adaptador SQL depende de la interfaz del núcleo, y no al revés. Martin (2017, p. 206) explica que esta aparente contradicción se resuelve con el Principio de Inversión de Dependencias, utilizando polimorfismo dinámico para que las dependencias se opongan al flujo de control justo en las fronteras.
+
+\subsection{Cómo lo resuelven los Puertos y Adaptadores de Cockburn}
+
+Cockburn (2005) llega a la misma solución desde otra perspectiva. Plantea que tanto el problema del lado del usuario como el del lado de la base de datos tienen la misma causa: \emph{el enredo entre la lógica de negocio y la interacción con entidades externas}. La regla es que el código del interior no debe filtrarse al exterior.
+
+En términos del inventario:
+\begin{itemize}[leftmargin=1.5em]
+  \item Un \textbf{puerto} es una conversación con propósito, expresada como una API. Por ejemplo, ``obtener y guardar productos'' o ``registrar movimientos''.
+  \item Un \textbf{adaptador} convierte esa API en las señales que necesita una tecnología concreta. Cockburn (2005) menciona explícitamente que para un mismo puerto de datos puede haber un adaptador SQL, uno de ficheros planos y, ``lo más importante'', un adaptador a una base de datos simulada en memoria.
+\end{itemize}
+
+Desde el punto de vista de la aplicación, si la base de datos cambia de SQL a otro tipo de almacenamiento, \emph{la conversación a través de la API no debería cambiar} (Cockburn, 2005).
+
+\subsection{Impacto en la testabilidad}
+
+La lentitud y fragilidad de las pruebas actuales tiene una explicación directa: para probar una regla de negocio hay que levantar la base de datos, porque la clase de negocio crea o recibe objetos concretos de acceso a datos. Con la Regla de Dependencia, las reglas de negocio pueden probarse \emph{sin la interfaz de usuario, la base de datos, el servidor web ni ningún otro elemento externo} (Martin, 2017, p. 202). Basta con inyectar un repositorio en memoria que implemente \texttt{IRepositorioProductos}.
+
+Esto concuerda con el orden de desarrollo que propone Cockburn (2005): primero se conduce la aplicación con pruebas automáticas contra una base de datos simulada, después se añade la interfaz gráfica y, solo en las pruebas de integración, se conecta la base de datos real. La Guía de Arquitectura N-Capas de Microsoft también destaca esta ventaja: el desacoplamiento permite sustituir el módulo de acceso a datos reales por uno que ``simplemente simula'' el acceso, lo que habilita el uso de \emph{stubs} y \emph{mocks} (De la Torre et al., 2010, p. 65).
+
+Martin (2017, pp. 251--252) añade un matiz importante sobre la fragilidad: las pruebas fuertemente acopladas a la estructura del sistema (por ejemplo, las que verifican reglas de negocio navegando por la interfaz) se rompen ante el más mínimo cambio. La solución es \emph{diseñar para la testabilidad}, cuya primera regla es no depender de lo volátil.
+
+\subsection{Impacto en el cambio de SQL Server a MongoDB}
+
+Martin (2017, p. 202) menciona este escenario de forma literal como una de las características de la Arquitectura Limpia: \emph{se puede sustituir Oracle o SQL Server por Mongo, BigTable, CouchDB u otra cosa}, porque las reglas de negocio no están ligadas a la base de datos. Con el diseño propuesto, el cambio se limita a:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Escribir un nuevo adaptador \texttt{RepositorioProductosMongo} que implemente la misma interfaz.
+  \item Cambiar el registro en el punto de composición (el contenedor de inyección de dependencias o el \texttt{Main}).
+\end{enumerate}
+
+Ni las entidades ni los casos de uso se recompilan. Para Martin (2017, p. 278), la base de datos es un \emph{detalle}, equivalente al pomo de la puerta respecto a la arquitectura de una casa.
+
+Sin embargo, el equipo considera honesto señalar dos limitaciones. Primero, Martin (2017, p. 171) reconoce que estos reemplazos \emph{pueden no ser triviales}; lo que garantiza la arquitectura es que el cambio sea \emph{factible} y localizado, no gratuito. Segundo, pasar de un modelo relacional a uno documental puede revelar que la interfaz del repositorio estaba ``contaminada'' con supuestos relacionales (consultas con \emph{joins}, transacciones entre varias tablas). Si el puerto se diseñó pensando en las necesidades del dominio y no en las tablas, el impacto será mínimo; si no, habrá que ajustarlo. Este es, de hecho, el motivo por el que Martin insiste en que los datos que cruzan las fronteras sean estructuras simples, convenientes para el círculo interno, y nunca filas de base de datos (Martin, 2017, p. 207).
+
+\subsection{Síntesis de \emph{trade-offs}}
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Atributo} & \textbf{N-Capas tradicional} & \textbf{Clean / Onion / Hexagonal} \\
+\midrule
+Simplicidad inicial & Alta: estilo conocido y barato (Richards \& Ford, 2020, cap. 10) & Menor: más interfaces, inyección de dependencias y mapeos entre modelos \\
+Testabilidad del negocio & Depende de la infraestructura & Alta: núcleo probado de forma aislada (Martin, 2017, p. 202) \\
+Cambio de base de datos & Afecta a negocio y presentación & Localizado en un adaptador \\
+Curva de aprendizaje & Baja & Media: exige dominar DIP e inyección de dependencias \\
+Adecuación & Aplicaciones pequeñas o centradas en datos & Aplicaciones de larga vida y lógica compleja (Palermo, 2008a) \\
+\bottomrule
+\end{tabularx}
+\caption{Comparación de compromisos entre ambos enfoques. Elaboración propia.}
+\end{table}
+
+En conclusión, el equipo de inventario no se equivocó al empezar con capas, sino al no reconocer el momento en que la complejidad del dominio exigía invertir las dependencias. Palermo (2008a) lo advierte desde el principio: su arquitectura no es apropiada para sitios pequeños, sino para aplicaciones empresariales de larga vida y comportamiento complejo, que es exactamente en lo que se convirtió el sistema de inventario.
+
+% ============================================================
+\section{Pregunta 2. La simetría del hexágono frente a la jerarquía de las capas}
+% ============================================================
+
+\subsection{El problema conceptual que resuelve la simetría}
+
+Cuando se dibuja una arquitectura en capas apiladas, el dibujo transmite, sin decirlo, una idea de \emph{jerarquía vertical}: la interfaz ``arriba'' y la base de datos ``abajo''. Esta imagen sugiere que la base de datos es el cimiento sobre el que se construye todo, y que la interfaz de usuario y la base de datos son cosas de naturaleza completamente distinta.
+
+Cockburn (2005) identifica dos problemas en estos dibujos. El primero, y el peor, es que la gente no se toma en serio las líneas entre capas y deja que la lógica de la aplicación las atraviese. El segundo es que muchas aplicaciones tienen más de dos puertos, de modo que la arquitectura no cabe en un dibujo unidimensional.
+
+La aportación conceptual del hexágono es cambiar la pregunta. La asimetría que importa \textbf{no es entre la izquierda y la derecha, ni entre arriba y abajo, sino entre el interior y el exterior} de la aplicación (Cockburn, 2005). Desde el punto de vista de la aplicación, una persona usando la interfaz gráfica, un \emph{script} de pruebas, otro sistema que llama por HTTP y una base de datos son, todos ellos, \emph{agentes externos} con los que se mantiene una conversación a través de un puerto. La simetría del dibujo obliga a tratarlos de manera uniforme.
+
+Este cambio de perspectiva tiene una consecuencia práctica muy fuerte: revela que el problema de ``la lógica de negocio filtrándose en la interfaz'' y el problema de ``la lógica de negocio atada a la base de datos'' \emph{son el mismo problema}. Cockburn (2005) lo dice expresamente: no es obvio que ambos problemas estén relacionados, pero existe una simetría entre ellos que se hace visible en la naturaleza de la solución. Un dibujo en capas, al colocar la interfaz y la base de datos en extremos opuestos, oculta esa relación.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+  \node[regular polygon, regular polygon sides=6, draw=azul, very thick, fill=azul!8, minimum size=5.6cm] (hex) {};
+  \node[regular polygon, regular polygon sides=6, draw=azul, fill=azul!20, minimum size=2.8cm, align=center, font=\small] (core) {Aplicación\\(dominio y\\casos de uso)};
+
+  % puertos
+  \node[font=\scriptsize, fill=white, draw, rounded corners=1pt] (p1) at ($(hex.corner 2)!0.5!(hex.corner 3)$) {Puerto: gestionar pedidos};
+  \node[font=\scriptsize, fill=white, draw, rounded corners=1pt] (p2) at ($(hex.corner 5)!0.5!(hex.corner 6)$) {Puerto: persistir pedidos};
+  \node[font=\scriptsize, fill=white, draw, rounded corners=1pt] (p3) at ($(hex.corner 1)!0.5!(hex.corner 6)$) {Puerto: notificar};
+  \node[font=\scriptsize, fill=white, draw, rounded corners=1pt] (p4) at ($(hex.corner 3)!0.5!(hex.corner 4)$) {Puerto: administrar};
+
+  % adaptadores
+  \node[caja, minimum width=2.1cm, fill=gray!10, font=\scriptsize] (a1) at (-5.6,1.4) {GUI web};
+  \node[caja, minimum width=2.1cm, fill=gray!10, font=\scriptsize] (a2) at (-5.6,0.2) {Pruebas automáticas};
+  \node[caja, minimum width=2.1cm, fill=gray!10, font=\scriptsize] (a3) at (5.6,-0.4) {SQL Server};
+  \node[caja, minimum width=2.1cm, fill=gray!10, font=\scriptsize] (a4) at (5.6,-1.6) {BD en memoria};
+  \node[caja, minimum width=2.1cm, fill=gray!10, font=\scriptsize] (a5) at (5.6,1.6) {Correo / SMS};
+  \node[caja, minimum width=2.1cm, fill=gray!10, font=\scriptsize] (a6) at (-5.6,-1.4) {API REST};
+
+  \draw[dep] (a1.east) -- (p1);
+  \draw[dep] (a2.east) -- (p1);
+  \draw[dep] (a6.east) -- (p4);
+  \draw[dep] (a3.west) -- (p2);
+  \draw[dep] (a4.west) -- (p2);
+  \draw[dep] (a5.west) -- (p3);
+
+  \node[font=\scriptsize\itshape, gris] at (-5.6,2.4) {Adaptadores primarios};
+  \node[font=\scriptsize\itshape, gris] at (5.6,2.4) {Adaptadores secundarios};
+\end{tikzpicture}
+\caption{Arquitectura Hexagonal: varios adaptadores pueden conectarse a un mismo puerto. Las flechas indican dependencia de código: los adaptadores conocen el puerto, el núcleo no conoce los adaptadores. Elaboración propia a partir de Cockburn (2005).}
+\label{fig:hexagono}
+\end{figure}
+
+\subsection{Por qué el hexágono no tiene seis lados por una razón numérica}
+
+Cockburn (2005) es explícito: \emph{el hexágono no es un hexágono porque el número seis sea importante}, sino para dar a quien dibuja espacio para insertar los puertos y adaptadores que necesite, sin la restricción de un dibujo en capas unidimensional. El término ``arquitectura hexagonal'' surge de ese efecto visual. El hexágono busca resaltar dos cosas: (a) la asimetría interior-exterior y la naturaleza similar de todos los puertos, alejándose de la imagen en capas ``y de todo lo que evoca''; y (b) la existencia de un número definido de puertos diferentes, que en su experiencia suele ser dos, tres o cuatro.
+
+En otras palabras, el hexágono es una herramienta de \emph{comunicación}, no una prescripción estructural. Un círculo habría cumplido la función de mostrar ``dentro y fuera'', pero no ofrece lados donde ubicar puertos. Un rectángulo, en cambio, invita de nuevo a pensar en ``arriba y abajo''. La forma hexagonal elimina esas connotaciones y deja espacio suficiente. Por eso el nombre más preciso del patrón es \emph{Puertos y Adaptadores}, que describe la función de cada parte del dibujo (Cockburn, 2005).
+
+Cabe destacar que el propio Cockburn reintroduce más adelante una distinción izquierda-derecha, pero con otro significado: los puertos \emph{primarios} (o conductores), que impulsan a la aplicación, se dibujan a la izquierda; y los \emph{secundarios} (o conducidos), a los que la aplicación da órdenes o hace consultas, a la derecha. Esta distinción proviene de los actores primarios y secundarios de los casos de uso (Cockburn, 2005). Lo importante es que esta asimetría \emph{se deriva de quién inicia la conversación}, no de una jerarquía de capas, y se aplica como consecuencia de usar el patrón, no como sustituto.
+
+\subsection{Del Puerto y Adaptador a las interfaces de la Arquitectura Onion}
+
+Palermo (2008a) reconoce que la Arquitectura Hexagonal y la Onion comparten la misma premisa: \emph{externalizar la infraestructura y escribir código adaptador para que la infraestructura no quede fuertemente acoplada}. La diferencia es de énfasis y de representación. Las cuatro reglas que Palermo (2008c) establece para su arquitectura permiten ver la correspondencia:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item La aplicación se construye alrededor de un modelo de objetos independiente.
+  \item \textbf{Las capas internas definen interfaces; las capas externas las implementan.}
+  \item La dirección del acoplamiento es hacia el centro.
+  \item Todo el código del núcleo puede compilarse y ejecutarse por separado de la infraestructura.
+\end{enumerate}
+
+La segunda regla es, precisamente, la traducción de ``puerto y adaptador'' al lenguaje de capas concéntricas:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item El \textbf{puerto} de Cockburn corresponde a una \textbf{interfaz definida en el núcleo} de la cebolla. Palermo (2008a) indica que la primera capa alrededor del Modelo de Dominio suele contener las \emph{interfaces de repositorio}, que proporcionan el comportamiento para guardar y recuperar objetos.
+  \item El \textbf{adaptador} de Cockburn corresponde a la \textbf{clase de infraestructura} situada en la capa externa que implementa esa interfaz. Palermo (2008a) explica que esa clase está acoplada a un método particular de acceso a datos, y por eso reside fuera del núcleo.
+\end{itemize}
+
+El ejemplo de CodeCampServer lo ilustra (Palermo, 2008b): \texttt{SpeakerController} (interfaz de usuario) depende solo de \texttt{IConferenceRepository} e \texttt{IUserSession}, interfaces definidas en el núcleo. Las clases \texttt{ConferenceRepository} y \texttt{UserSession} viven en capas externas e implementan esas interfaces. En tiempo de ejecución, un contenedor de Inversión de Control construye las clases adecuadas y las inyecta por el constructor. Es exactamente la mecánica de puertos y adaptadores: un adaptador secundario (el repositorio) que se conecta a un puerto (la interfaz), con el núcleo ignorante de qué hay al otro lado.
+
+La Guía de Arquitectura N-Capas formaliza esta misma idea como una regla de diseño: definir los interfaces de los repositorios dentro de la Capa de Dominio, siguiendo el patrón \emph{Separated Interface}, y ubicar su implementación en la capa de Infraestructura de Persistencia (De la Torre et al., 2010, pp. 174--175).
+
+\subsection{Lo que el dibujo de capas no transmite (y lo que sí aporta)}
+
+El equipo considera que ambas metáforas tienen fortalezas complementarias:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{El hexágono transmite mejor la equivalencia entre agentes externos.} En la cebolla, la interfaz de usuario, la infraestructura y las pruebas aparecen en el mismo anillo exterior (Palermo, 2008a), pero el dibujo no enfatiza que sean intercambiables respecto a un mismo puerto. En el hexágono, la imagen de varios adaptadores conectados al mismo puerto hace evidente que la GUI y un \emph{script} de pruebas son, para la aplicación, lo mismo.
+  \item \textbf{La cebolla transmite mejor la estructura interna del núcleo.} El hexágono trata el interior como una caja; no dice nada sobre cómo organizar el dominio. La cebolla, en cambio, diferencia el Modelo de Dominio en el centro, los servicios de dominio y los servicios de aplicación alrededor. Palermo (2008c) incluso muestra que, una vez aplanada, la cebolla se puede dibujar como capas apiladas, pero con el acceso a datos \emph{arriba}, junto a la interfaz, y no abajo.
+\end{itemize}
+
+Este último punto es revelador: Palermo (2008c) dibuja la arquitectura en capas tradicional en forma de círculos concéntricos y concluye que, en ese caso, ``se ve claramente que la aplicación está construida alrededor del acceso a datos''. Es decir, \textbf{la forma del dibujo no es lo que define la arquitectura; lo que la define es la dirección de las dependencias}. Martin (2017, p. 247) llega a la misma conclusión al afirmar que la arquitectura de un sistema está definida por las fronteras que se trazan dentro de él y por las dependencias que cruzan esas fronteras.
+
+% ============================================================
+\section{Pregunta 3. DDD y \emph{Bounded Context} en un dominio de seguros}
+% ============================================================
+
+\subsection{El problema: un único modelo de ``Póliza'' para todos}
+
+La empresa aseguradora necesita un sistema de pólizas de automóviles que interactúa con siniestros, facturación de primas y una aplicación móvil para ajustadores. El enunciado muestra el núcleo del problema: la palabra \emph{póliza} significa cosas distintas para cada área. Para un actuario es un contrato con cláusulas; para facturación, una fuente de ingresos; para un ajustador, un número de referencia.
+
+La tentación clásica sería crear una única clase \texttt{Poliza} compartida por toda la organización, con decenas de atributos: cláusulas, coberturas, calendario de pagos, saldo pendiente, siniestros asociados, fotos de daños, etc. Richards y Ford (2020, cap. 7) explican que, antes de DDD, los desarrolladores buscaban la reutilización holística de las entidades comunes, pero que crear artefactos compartidos genera acoplamiento, dificulta la coordinación y aumenta la complejidad. Una clase así cambiaría por razones de todos los departamentos y no sería coherente con ninguno.
+
+\subsection{División en contextos delimitados}
+
+Evans (2003) define el \emph{Bounded Context} como el límite explícito dentro del cual un modelo es válido y tiene un significado preciso. Richards y Ford (2020, cap. 7) lo resumen así: todo lo relacionado con el dominio es visible internamente, pero opaco para los demás contextos; en lugar de crear una clase unificada para toda la organización, cada dominio crea la suya y concilia las diferencias en los puntos de integración.
+
+Para el caso de seguros, el equipo propone los siguientes contextos, cada uno con su propio \textbf{Lenguaje Ubicuo}:
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Contexto} & \textbf{Qué significa ``póliza''} & \textbf{Elementos del modelo (DDD)} \\
+\midrule
+Suscripción y Pólizas & Contrato legal con cláusulas, coberturas, vigencia y prima calculada & Agregado \texttt{Poliza} (raíz) con entidades \texttt{Cobertura} y \texttt{Clausula}; objetos-valor \texttt{Vigencia}, \texttt{Vehiculo}, \texttt{Prima} \\
+Facturación de primas & Cuenta que genera ingresos periódicos & Agregado \texttt{CuentaDePrima} con \texttt{PlanDePagos}, \texttt{Recibo}; objetos-valor \texttt{Dinero}, \texttt{NumeroPoliza} \\
+Siniestros & Respaldo de cobertura para un reclamo & Agregado \texttt{Siniestro} con \texttt{Reclamacion}, \texttt{Reserva}; objeto-valor \texttt{CoberturaVigente} (copia de lo necesario) \\
+Peritaje en campo & Un número de referencia & Agregado \texttt{InformeDePeritaje} con \texttt{Fotografia}, \texttt{DanoEvaluado}; objeto-valor \texttt{NumeroPoliza} \\
+\bottomrule
+\end{tabularx}
+\caption{Contextos delimitados propuestos para el sistema de seguros. Elaboración propia.}
+\label{tab:contextos}
+\end{table}
+
+La identificación de estos contextos se apoya en dos criterios que proponen Richards y Ford (2020, cap. 17) para encontrar fronteras: el \emph{propósito} (cada contexto aporta un comportamiento significativo y cohesivo) y las \emph{transacciones} (las entidades que deben cooperar en una misma transacción indican una buena frontera). Por ejemplo, emitir una póliza y calcular su prima es una transacción coherente dentro de Suscripción; registrar un pago es una transacción de Facturación que no necesita bloquear la póliza.
+
+La Guía de Arquitectura N-Capas plantea la misma idea con el concepto de \emph{módulos}: cuando el modelo de dominio crece, se particiona en módulos verticales, cada uno responsable de un área de negocio, como ocurre en los ERP con Nómina, Facturación o Almacén. El nombre de cada módulo debe formar parte del Lenguaje Ubicuo, y la comunicación entre módulos debe hacerse mediante interfaces, por ejemplo un Servicio DDD, en lugar de llamar directamente a sus objetos internos (De la Torre et al., 2010, pp. 71--72).
+
+\subsection{Cómo evitar que el modelo de Póliza se contamine}
+
+Para que el modelo de \texttt{Poliza} del contexto de Suscripción no se llene de detalles de siniestros o facturación, el equipo propone las siguientes reglas:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Cada contexto tiene su propio modelo y su propio almacenamiento.} En un contexto delimitado, las partes internas (código y esquemas de datos) están acopladas entre sí, pero nunca a nada externo, como una base de datos o una definición de clase de otro contexto (Richards \& Ford, 2020, cap. 17). Siniestros no lee la tabla de pólizas; mantiene su propia copia de lo que necesita.
+  \item \textbf{Preferir la duplicación al acoplamiento.} Richards y Ford (2020, cap. 17) señalan que, cuando el objetivo es un alto desacoplamiento, se favorece la duplicación frente a la reutilización. Que \texttt{NumeroPoliza} exista como objeto-valor en tres contextos no es un defecto, sino una decisión deliberada.
+  \item \textbf{Referenciar entre contextos solo por identidad.} Siniestros no guarda una referencia a la entidad \texttt{Poliza} de otro contexto, sino un objeto-valor \texttt{NumeroPoliza}. Esto es coherente con la regla de los agregados: los objetos externos solo pueden referenciar a la entidad raíz, y solo las raíces tienen repositorios (De la Torre et al., 2010, pp. 172--173).
+  \item \textbf{Usar objetos-valor para lo descriptivo.} La Guía recuerda que un mismo concepto puede ser entidad en un sistema y objeto-valor en otro; su ejemplo es la dirección (De la Torre et al., 2010, pp. 168--169). Aquí ocurre lo mismo con la póliza: es entidad (con identidad y ciclo de vida) en Suscripción, pero solo un valor de referencia en Peritaje.
+\end{enumerate}
+
+\subsection{Comunicación desacoplada entre contextos}
+
+Los contextos necesitan intercambiar información: Facturación debe enterarse de que se emitió una póliza; Siniestros debe saber si una póliza estaba vigente en la fecha del accidente. El equipo propone combinar dos mecanismos:
+
+\paragraph{a) Eventos de dominio (comunicación asíncrona).} Cuando una póliza se emite, se cancela o se renueva, el contexto de Suscripción publica un evento (\texttt{PolizaEmitida}, \texttt{PolizaCancelada}). Facturación y Siniestros se suscriben y actualizan su propio modelo. La Guía define un evento como ``un cambio significativo de estado'' y describe sistemas con emisores y consumidores de eventos débilmente acoplados (De la Torre et al., 2010, pp. 43--44); también propone los Eventos del Dominio para articular reglas del tipo ``cuando [algo] ocurre, el sistema debe [hacer algo]'' (p. 195). Richards y Ford (2020, cap. 7) añaden que la comunicación asíncrona, mediante una cola de mensajes, permite absorber las diferencias de capacidad entre servicios.
+
+\paragraph{b) Consultas a través de una interfaz publicada (comunicación síncrona).} Cuando el ajustador está en el lugar del accidente y necesita confirmar la vigencia, la aplicación de Peritaje consulta una API de solo lectura que expone Suscripción. Esa API devuelve un objeto de transferencia simple, nunca la entidad interna.
+
+En ambos casos, el contexto receptor \textbf{traduce} el mensaje externo a su propio modelo. Evans (2003) denomina \emph{capa anticorrupción} a esta capa de traducción, que impide que los conceptos de otro modelo se filtren en el propio.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[ctx/.style={draw=azul, very thick, rounded corners=6pt, fill=azul!6, minimum width=3.8cm, minimum height=2.0cm, align=center, font=\small}]
+  \node[ctx] (sus) at (0,0) {\textbf{Suscripción}\\\textbf{y Pólizas}\\\footnotesize Poliza = contrato};
+  \node[ctx] (fac) at (-5,-3.4) {\textbf{Facturación}\\\textbf{de primas}\\\footnotesize CuentaDePrima};
+  \node[ctx] (sin) at (5,-3.4) {\textbf{Siniestros}\\\footnotesize Siniestro + NumeroPoliza};
+  \node[ctx] (per) at (6.6,0) {\textbf{Peritaje}\\\textbf{en campo}\\\footnotesize NumeroPoliza};
+  \node[draw, fill=gray!15, minimum width=3.2cm, minimum height=0.8cm, font=\small] (bus) at (0,-3.4) {Bus de eventos};
+
+  \draw[dep] (sus.south) -- node[right, font=\scriptsize, align=left]{PolizaEmitida\\PolizaCancelada} (bus.north);
+  \draw[dep] (bus.west) -- node[above, font=\scriptsize]{suscribe} (fac.east);
+  \draw[dep] (bus.east) -- node[above, font=\scriptsize]{suscribe} (sin.west);
+  \draw[depdash] (per.west) -- node[midway, above, font=\scriptsize, align=center]{consulta vigencia\\(API publicada)} (sus.east);
+  \draw[dep] (per.south) -- node[left, font=\scriptsize, align=right]{Informe\\DePeritajeEmitido} (sin.north);
+
+  \node[font=\scriptsize\itshape, gris, align=center] at (-5,-4.9) {Agente de Servicio traduce\\eventos al modelo propio};
+  \node[font=\scriptsize\itshape, gris, align=center] at (5,-4.9) {Agente de Servicio traduce\\eventos al modelo propio};
+\end{tikzpicture}
+\caption{Mapa de contextos propuesto. Cada contexto mantiene su propio modelo de ``póliza''; la integración se hace mediante eventos y APIs publicadas, con traducción en el receptor. Elaboración propia.}
+\label{fig:contextos}
+\end{figure}
+
+\subsection{Relación con una arquitectura orientada al dominio y el Agente de Servicio}
+
+Cada contexto delimitado se implementa internamente con una arquitectura orientada al dominio, como Onion o Clean. Esto es coherente con lo que plantean Richards y Ford (2020, cap. 8): en una partición por dominios, cada componente de primer nivel (aquí, cada contexto) puede tener subcomponentes, incluidas capas, pero la partición superior gira alrededor del dominio. Martin (2017, p. 246) llega a la misma conclusión desde otro ángulo: los servicios deben diseñarse con una arquitectura interna de componentes que respete la Regla de Dependencia.
+
+Dentro del contexto de Siniestros, por ejemplo, la estructura quedaría así:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Dominio (centro):} agregado \texttt{Siniestro}, objeto-valor \texttt{CoberturaVigente}, regla ``no se abre un siniestro sobre una póliza cancelada''. Aquí se declara también el puerto \texttt{IConsultaCoberturas}, expresado en el lenguaje de Siniestros.
+  \item \textbf{Aplicación:} caso de uso \texttt{AbrirSiniestro}, que usa el puerto sin saber cómo se implementa.
+  \item \textbf{Infraestructura (exterior):} la clase \texttt{AgenteServicioPolizas}, que implementa \texttt{IConsultaCoberturas} llamando a la API de Suscripción, y el consumidor de eventos que actualiza la copia local de coberturas.
+\end{itemize}
+
+Esta clase es lo que la Guía de Arquitectura N-Capas denomina \textbf{Agente de Servicio}: objetos que manejan la semántica específica de la comunicación con servicios externos, aíslan a la aplicación de las particularidades de cada servicio y realizan mapeos entre el formato de datos que expone el servicio externo y el formato que utiliza la aplicación; además pueden incorporar caché o soporte para escenarios sin conexión (De la Torre et al., 2010, pp. 108, 155--156). La Guía añade que, en aplicaciones grandes, los agentes actúan como un nivel de abstracción entre la Capa de Dominio y los servicios remotos, y que son componentes ``perfectos'' para desacoplarlos con IoC y simularlos con \emph{fakes} en las pruebas (p. 156).
+
+Visto desde la Arquitectura Hexagonal, \texttt{IConsultaCoberturas} es un puerto secundario y \texttt{AgenteServicioPolizas} es su adaptador. Visto desde DDD, el agente es la capa anticorrupción: convierte el ``contrato con cláusulas'' de Suscripción en la ``cobertura vigente'' que Siniestros necesita. Las tres visiones describen el mismo mecanismo.
+
+\begin{lstlisting}[caption={Puerto definido en el dominio de Siniestros y Agente de Servicio en infraestructura (simplificado).}]
+// --- Contexto Siniestros: capa de Dominio ---
+public record NumeroPoliza(string Valor);
+public record CoberturaVigente(NumeroPoliza Poliza, bool CubreDanosPropios,
+                               decimal Franquicia, DateOnly Desde, DateOnly Hasta);
+
+public interface IConsultaCoberturas   // puerto en lenguaje de Siniestros
+{
+    Task<CoberturaVigente?> ObtenerAsync(NumeroPoliza poliza, DateOnly fecha);
+}
+
+// --- Contexto Siniestros: capa de Infraestructura ---
+public class AgenteServicioPolizas : IConsultaCoberturas
+{
+    private readonly HttpClient _http;
+    public AgenteServicioPolizas(HttpClient http) => _http = http;
+
+    public async Task<CoberturaVigente?> ObtenerAsync(NumeroPoliza poliza, DateOnly fecha)
+    {
+        // DTO propio del contexto Suscripcion: nunca sale de esta clase
+        var dto = await _http.GetFromJsonAsync<PolizaDto>(
+            $"/api/polizas/{poliza.Valor}?fecha={fecha:yyyy-MM-dd}");
+        if (dto is null || dto.Estado != "VIGENTE") return null;
+
+        // Traduccion (anticorrupcion): contrato con clausulas -> cobertura vigente
+        bool danosPropios = dto.Clausulas.Any(c => c.Codigo == "TODO_RIESGO");
+        return new CoberturaVigente(poliza, danosPropios, dto.Franquicia,
+                                    dto.InicioVigencia, dto.FinVigencia);
+    }
+}
+\end{lstlisting}
+
+Gracias a esta separación, si el departamento de Suscripción reestructura sus cláusulas o cambia su API, solo cambia \texttt{AgenteServicioPolizas}. El agregado \texttt{Siniestro} y el caso de uso \texttt{AbrirSiniestro} no se enteran.
+
+% ============================================================
+\section{Pregunta 4. La inversión de dependencias en la práctica}
+% ============================================================
+
+\subsection{Situación actual}
+
+En el sistema de pedidos, la clase \texttt{OrderProcessor} contiene la lógica principal de negocio y, para completar su tarea, crea y llama directamente a \texttt{AddressValidatorService}, que a su vez depende de una librería HTTP concreta. El Listado~\ref{lst:antes} muestra una versión simplificada.
+
+\begin{lstlisting}[caption={Diseño original: dependencia directa de una clase concreta.},label={lst:antes}]
+public class OrderProcessor
+{
+    public void Process(Order order)
+    {
+        var validator = new AddressValidatorService();   // dependencia concreta
+        if (!validator.Validate(order.ShippingAddress))
+            throw new InvalidOperationException("Direccion invalida");
+
+        order.MarkAsConfirmed();
+        // ... resto de la logica de negocio
+    }
+}
+
+public class AddressValidatorService
+{
+    private readonly SomeHttpLibrary.Client _client = new("https://api.validador.com");
+
+    public bool Validate(Address address)
+    {
+        var response = _client.Post("/validate", address);
+        return response.StatusCode == 200 && response.Body.Contains("\"valid\":true");
+    }
+}
+\end{lstlisting}
+
+\subsection{a) Por qué este diseño viola los principios de Hexagonal, Clean y Onion}
+
+\paragraph{Dirección de las dependencias.} En las tres arquitecturas, las dependencias de código fuente deben apuntar \textbf{hacia el núcleo de negocio}. Martin (2017, p. 203) lo establece como Regla de Dependencia; Palermo (2008c) lo enuncia como ``la dirección del acoplamiento es hacia el centro''; Cockburn (2005) lo expresa como que el código del interior no debe depender de la tecnología del exterior. En el diseño actual ocurre lo contrario: \texttt{OrderProcessor} (política de alto nivel) depende de \texttt{AddressValidatorService} (detalle de bajo nivel), que a su vez depende de una librería HTTP. Por transitividad, la regla de negocio está acoplada al protocolo HTTP, a la URL del proveedor y al formato JSON de su respuesta.
+
+\paragraph{Violación del DIP.} Martin (2017, p. 87) define el Principio de Inversión de Dependencias diciendo que los sistemas más flexibles son aquellos en los que las dependencias de código fuente se refieren solo a abstracciones, no a concreciones. Entre sus reglas prácticas figuran: no referirse a clases concretas volátiles y \emph{no mencionar nunca el nombre de nada concreto y volátil} (Martin, 2017, p. 89). La línea \texttt{new AddressValidatorService()} viola ambas: menciona y crea una clase concreta. Además, un servicio externo de validación es exactamente el tipo de elemento volátil que Martin distingue de los elementos estables como \texttt{String}, que sí se toleran (p. 88).
+
+La Guía de Arquitectura N-Capas expresa el mismo principio en sus dos enunciados: las capas de alto nivel no deben depender de las de bajo nivel, ambas deben depender de abstracciones; y las abstracciones no deben depender de los detalles, sino los detalles de las abstracciones (De la Torre et al., 2010, p. 64). Insiste además en que, entre capas, no se deben instanciar dependencias de forma explícita (p. 66).
+
+\paragraph{Consecuencias concretas.}
+\begin{itemize}[leftmargin=1.5em]
+  \item No es posible probar \texttt{OrderProcessor} sin conexión a Internet ni sin que el servicio externo esté disponible.
+  \item Un cambio en la librería HTTP o en la API del proveedor obliga a recompilar y redesplegar la lógica de pedidos.
+  \item No se puede cambiar de proveedor sin modificar código de negocio, lo que viola también el Principio Abierto/Cerrado (Martin, 2017, p. 70).
+\end{itemize}
+
+\subsection{b) Rediseño}
+
+La solución consiste en introducir una abstracción que exprese \emph{lo que el negocio necesita}, no \emph{cómo se obtiene}. El negocio necesita saber si una dirección es entregable; no le interesa si eso se resuelve con HTTP, con una base de datos local o con una regla fija.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1cm]
+  \begin{scope}[on background layer]
+  \end{scope}
+  \node[caja, fill=azul!20, minimum width=3.6cm] (op) {\texttt{OrderProcessor}};
+  \node[caja, fill=azul!8, right=2.2cm of op, minimum width=3.8cm] (port) {\guillemotleft interfaz\guillemotright\\\texttt{IAddressValidator}};
+  \node[caja, fill=gray!10, below=1.8cm of port, minimum width=3.8cm] (adp) {\texttt{HttpAddressValidator}};
+  \node[caja, fill=gray!25, below=1.0cm of adp, minimum width=3.8cm] (lib) {Librería HTTP};
+  \node[caja, fill=gray!10, left=1.0cm of adp, minimum width=3.2cm] (fake) {\texttt{FakeAddressValidator}\\\footnotesize(pruebas)};
+
+  \draw[dep] (op) -- node[above, font=\scriptsize]{usa} (port);
+  \draw[impl] (adp) -- node[right, font=\scriptsize]{implementa} (port);
+  \draw[impl] (fake.north) -- (port.south west);
+  \draw[dep] (adp) -- (lib);
+
+  \begin{scope}[on background layer]
+    \node[draw=azul, dashed, rounded corners, fill=azul!3, fit=(op)(port), inner sep=0.4cm, label={[font=\small\bfseries, azul]above:Núcleo de la aplicación}] {};
+    \node[draw=gray, dashed, rounded corners, fill=gray!3, fit=(adp)(lib)(fake), inner sep=0.4cm, label={[font=\small\bfseries, gris]below:Infraestructura / exterior del hexágono}] {};
+  \end{scope}
+\end{tikzpicture}
+\caption{Rediseño: la interfaz pertenece al núcleo; la implementación HTTP y el doble de prueba pertenecen al exterior. Todas las flechas que cruzan la frontera apuntan hacia el núcleo. Elaboración propia.}
+\label{fig:p4}
+\end{figure}
+
+\begin{lstlisting}[caption={Núcleo de la aplicación: entidad, puerto y lógica de negocio.},label={lst:nucleo}]
+// ===== Proyecto Pedidos.Core (no referencia a ninguna libreria HTTP) =====
+public record AddressValidationResult(bool IsValid, string? Reason = null);
+
+public interface IAddressValidator          // PUERTO: definido por el negocio
+{
+    Task<AddressValidationResult> ValidateAsync(Address address);
+}
+
+public class OrderProcessor
+{
+    private readonly IAddressValidator _addressValidator;
+
+    // La dependencia llega desde fuera (inyeccion por constructor)
+    public OrderProcessor(IAddressValidator addressValidator)
+        => _addressValidator = addressValidator;
+
+    public async Task ProcessAsync(Order order)
+    {
+        var result = await _addressValidator.ValidateAsync(order.ShippingAddress);
+        if (!result.IsValid)
+            throw new InvalidAddressException(result.Reason);
+
+        order.MarkAsConfirmed();
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Infraestructura: adaptador concreto y composición en el punto de arranque.},label={lst:infra}]
+// ===== Proyecto Pedidos.Infrastructure (referencia a Pedidos.Core) =====
+public class HttpAddressValidator : IAddressValidator   // ADAPTADOR
+{
+    private readonly HttpClient _http;
+    public HttpAddressValidator(HttpClient http) => _http = http;
+
+    public async Task<AddressValidationResult> ValidateAsync(Address address)
+    {
+        var response = await _http.PostAsJsonAsync("/validate", address);
+        if (!response.IsSuccessStatusCode)
+            return new(false, "Servicio de validacion no disponible");
+
+        var body = await response.Content.ReadFromJsonAsync<ProviderResponse>();
+        return new(body!.Valid, body.Message);   // traduccion al modelo del nucleo
+    }
+}
+
+// ===== Program.cs (componente "main": unico lugar que conoce las concreciones) =====
+builder.Services.AddHttpClient<IAddressValidator, HttpAddressValidator>(
+    c => c.BaseAddress = new Uri("https://api.validador.com"));
+builder.Services.AddScoped<OrderProcessor>();
+\end{lstlisting}
+
+\paragraph{Justificación de la ubicación de cada componente.}
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{IAddressValidator} reside en el \textbf{núcleo} porque es un contrato que define el negocio según sus propias necesidades. La Guía indica que los contratos que definen el comportamiento requerido a los componentes de bajo nivel \emph{deben existir en los ensamblados de alto nivel}; cuando los componentes de bajo nivel los implementan, son ellos los que dependen, al compilar, de los de alto nivel; por eso se habla de inversión (De la Torre et al., 2010, pp. 64--65).
+  \item \texttt{HttpAddressValidator} reside en la \textbf{infraestructura}, o fuera del hexágono, porque está ligado a una tecnología concreta. Es un adaptador secundario en términos de Cockburn (2005) y pertenece a la capa de adaptadores de interfaz en términos de Martin (2017, p. 205), donde se convierten los datos de agentes externos al formato interno.
+  \item El \textbf{componente de composición} (\texttt{Program.cs}) es el único que conoce las clases concretas. Martin (2017, p. 91) reconoce que las violaciones del DIP no pueden eliminarse por completo, pero sí concentrarse en un número reducido de componentes concretos, normalmente llamado \texttt{main}.
+\end{itemize}
+
+Un detalle de diseño importante es que el puerto devuelve \texttt{AddressValidationResult}, un tipo del núcleo, y no la respuesta HTTP ni el DTO del proveedor. De lo contrario, el núcleo volvería a conocer formatos del exterior, lo que Martin (2017, p. 207) desaconseja expresamente.
+
+\subsection{c) Pruebas aisladas, mantenibilidad y cambio de proveedor}
+
+Con el nuevo diseño, \texttt{OrderProcessor} se puede probar inyectando un doble de prueba que implemente \texttt{IAddressValidator}. No se realizan llamadas HTTP reales, no se depende de la librería HTTP y las pruebas se ejecutan en milisegundos.
+
+\begin{lstlisting}[caption={Prueba unitaria de OrderProcessor con un doble de prueba (xUnit).},label={lst:test}]
+public class FakeAddressValidator : IAddressValidator
+{
+    private readonly bool _valid;
+    public int Calls { get; private set; }
+    public FakeAddressValidator(bool valid) => _valid = valid;
+
+    public Task<AddressValidationResult> ValidateAsync(Address address)
+    {
+        Calls++;
+        return Task.FromResult(new AddressValidationResult(_valid, _valid ? null : "No existe"));
+    }
+}
+
+public class OrderProcessorTests
+{
+    [Fact]
+    public async Task Confirma_el_pedido_cuando_la_direccion_es_valida()
+    {
+        var processor = new OrderProcessor(new FakeAddressValidator(valid: true));
+        var order = OrderMother.WithAddress("Calle 23 No. 456");
+
+        await processor.ProcessAsync(order);
+
+        Assert.True(order.IsConfirmed);
+    }
+
+    [Fact]
+    public async Task Rechaza_el_pedido_cuando_la_direccion_es_invalida()
+    {
+        var processor = new OrderProcessor(new FakeAddressValidator(valid: false));
+        var order = OrderMother.WithAddress("Direccion inexistente");
+
+        await Assert.ThrowsAsync<InvalidAddressException>(() => processor.ProcessAsync(order));
+        Assert.False(order.IsConfirmed);
+    }
+}
+\end{lstlisting}
+
+Esto es exactamente lo que plantea Cockburn (2005) cuando afirma que el beneficio último de los puertos y adaptadores es poder ejecutar la aplicación en modo completamente aislado. La Guía añade que, mediante la inyección de dependencias, este cambio de implementación real a simulada puede hacerse incluso por configuración (De la Torre et al., 2010, p. 65).
+
+\paragraph{Implicaciones para la mantenibilidad.}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Cambios aislados:} actualizar la librería HTTP, cambiar la URL o el formato de respuesta del proveedor afecta solo a \texttt{HttpAddressValidator}.
+  \item \textbf{Responsabilidad única:} \texttt{OrderProcessor} contiene solo reglas de pedidos; la comunicación de red queda en otra clase que cambia por otros motivos.
+  \item \textbf{Comportamientos transversales sin tocar el negocio:} se puede añadir caché, reintentos o un \emph{circuit breaker} envolviendo el adaptador (por ejemplo, un \texttt{CachedAddressValidator} que también implemente \texttt{IAddressValidator}), sin modificar \texttt{OrderProcessor}.
+\end{itemize}
+
+\paragraph{Cambio de proveedor.} Si mañana se cambia de proveedor, se escribe un nuevo adaptador (por ejemplo, \texttt{OtroProveedorAddressValidator}) y se cambia una línea en \texttt{Program.cs}. El núcleo no se modifica ni se recompila. Esto cumple el Principio Abierto/Cerrado: el comportamiento del sistema se extiende sin modificar el artefacto existente (Martin, 2017, p. 70). Incluso es posible tener dos proveedores a la vez, uno por país, inyectando la implementación adecuada según la configuración, que es uno de los escenarios que la Guía cita como ejemplo de desacoplamiento dentro del propio dominio (De la Torre et al., 2010, p. 64).
+
+Como contrapartida, el equipo reconoce que el diseño añade una interfaz, una clase y un registro en el contenedor. Para una aplicación pequeña puede ser excesivo. Pero para una dependencia de red externa, volátil y fuera de nuestro control, el coste es mínimo frente al beneficio.
+
+% ============================================================
+\section{Pregunta 5. El \emph{Kitty Problem} y el Principio Abierto/Cerrado}
+% ============================================================
+
+\subsection{Aclaración sobre la fuente}
+
+La orientación del seminario atribuye el \emph{Kitty Problem} a Richards y Ford. Sin embargo, al revisar la bibliografía, el equipo comprobó que este ejemplo aparece en \emph{Clean Architecture}, en el capítulo 27, ``Services: Great and Small'' (Martin, 2017, pp. 242--246). En \emph{Fundamentals of Software Architecture} no se encontró ninguna referencia a este caso. Por esa razón, en esta sección se cita a Martin como fuente original del ejemplo y a Richards y Ford como apoyo en los conceptos de partición por dominio y \emph{bounded context}, que sí desarrollan ampliamente.
+
+\subsection{Descripción del problema}
+
+Martin (2017, pp. 242--243) describe un sistema agregador de taxis que conoce a varios proveedores de una ciudad y permite a los clientes pedir viajes según criterios como hora de recogida, coste, lujo o experiencia del conductor. Para que el sistema fuera escalable, los arquitectos lo construyeron con muchos microservicios pequeños, cada uno a cargo de un equipo:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{TaxiUI}: atiende a los clientes desde sus dispositivos móviles.
+  \item \texttt{TaxiFinder}: examina los inventarios de los \texttt{TaxiSupplier} y determina qué taxis son candidatos.
+  \item \texttt{TaxiSelector}: aplica los criterios del usuario y elige un taxi entre los candidatos.
+  \item \texttt{TaxiDispatcher}: ordena el taxi seleccionado.
+\end{itemize}
+
+Tras un año de funcionamiento, el departamento de marketing anuncia un servicio de entrega de gatitos a domicilio. Se establecerán puntos de recogida de gatitos; cuando se haga un pedido, un taxi cercano recogerá un gatito y lo entregará. Solo algunos proveedores participan; los conductores alérgicos a los gatos no deben ser seleccionados; y un vehículo que haya transportado gatitos en los últimos tres días no debe asignarse a clientes que declaren alergia.
+
+La pregunta de Martin es directa: ¿cuántos servicios deben cambiar? Su respuesta: \emph{todos}. El desarrollo y despliegue de la nueva funcionalidad tendrá que coordinarse cuidadosamente, lo que demuestra que los servicios \emph{están acoplados} y no pueden desarrollarse, desplegarse ni mantenerse de forma independiente (Martin, 2017, p. 243).
+
+\subsection{Por qué la división por verbos o funciones llevó al problema}
+
+Martin (2017, p. 243) identifica la causa: es el problema de las \emph{preocupaciones transversales} (\emph{cross-cutting concerns}). Las descomposiciones funcionales como la del sistema de taxis son muy vulnerables a nuevas funcionalidades que atraviesan todos esos comportamientos.
+
+El equipo considera útil explicarlo así: los servicios se dividieron según \emph{pasos de un proceso} (encontrar, seleccionar, despachar), es decir, según verbos. Cada uno de esos pasos contiene implícitamente el conocimiento de \emph{qué se transporta}: personas. Cuando aparece un nuevo tipo de carga (gatitos), cambia la semántica de cada paso: encontrar ahora implica filtrar proveedores participantes y conductores alérgicos; seleccionar implica considerar el historial del vehículo; despachar implica pasar por un punto de recogida. La variación del negocio (``qué se transporta'') atraviesa perpendicularmente la descomposición elegida (``qué paso del proceso es'').
+
+Este fenómeno guarda relación con lo que Richards y Ford (2020, cap. 8) observan en las arquitecturas particionadas técnicamente: un flujo de negocio como \emph{CatalogCheckout} queda ``esparcido'' entre todas las capas. Aquí ocurre lo mismo, pero con servicios: el concepto de negocio ``entrega de gatitos'' queda repartido entre todos los servicios. Además, también se acerca a lo que estos autores llaman la \emph{trampa de la entidad}: diseñar componentes como una simple correspondencia con las entidades o funciones técnicas, en lugar de con los flujos de negocio (Richards \& Ford, 2020, cap. 8).
+
+Martin (2017, p. 241) nombra este error como la \emph{falacia del desacoplamiento}: creer que, por estar separados físicamente en servicios, los componentes están desacoplados. Si están acoplados por datos o por comportamiento, su desarrollo, despliegue y operación deben coordinarse igualmente.
+
+\subsection{Solución: componentes \texttt{Rides} y \texttt{Kittens} como \emph{plugins}}
+
+Martin (2017, p. 244) propone resolver el problema con una arquitectura basada en componentes guiada por los principios SOLID: un conjunto de clases que puedan extenderse polimórficamente para manejar nuevas funcionalidades. La estrategia es:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Conservar en clases base abstractas la lógica genérica de los servicios originales: encontrar candidatos, seleccionar y despachar un vehículo.
+  \item Extraer la lógica específica de los viajes de personas a un componente \texttt{Rides}.
+  \item Colocar la nueva funcionalidad en un componente \texttt{Kittens}.
+  \item Ambos componentes sobrescriben las clases base abstractas mediante patrones como \emph{Template Method} o \emph{Strategy}, y respetan la Regla de Dependencia: dependen de las abstracciones, nunca al revés.
+  \item Las clases concretas son creadas por fábricas bajo control de la interfaz de usuario.
+\end{enumerate}
+
+El resultado, según Martin (2017, p. 244), es que al implementar la funcionalidad de gatitos solo cambia \texttt{TaxiUI}; nada más necesita modificarse. Se añade un nuevo \texttt{jar}, \emph{gem} o DLL al sistema y se carga dinámicamente. La funcionalidad queda desacoplada y puede desarrollarse y desplegarse de forma independiente.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=0.5cm]
+  % Antes
+  \node[font=\bfseries\small] at (-4,2.2) {a) Descomposición funcional};
+  \node[caja, minimum width=2.6cm, fill=rojo!10] (ui) at (-4,1.3) {TaxiUI};
+  \node[caja, minimum width=2.6cm, fill=rojo!10, below=of ui] (fi) {TaxiFinder};
+  \node[caja, minimum width=2.6cm, fill=rojo!10, below=of fi] (se) {TaxiSelector};
+  \node[caja, minimum width=2.6cm, fill=rojo!10, below=of se] (di) {TaxiDispatcher};
+  \draw[dep] (ui) -- (fi); \draw[dep] (fi) -- (se); \draw[dep] (se) -- (di);
+  \node[font=\scriptsize, rojo, align=center] at (-4,-4.0) {Gatitos: cambian\\los 4 servicios};
+
+  % Despues
+  \node[font=\bfseries\small] at (3.5,2.2) {b) Componentes y \emph{plugins}};
+  \node[caja, minimum width=2.4cm, fill=gray!10] (ui2) at (1.5,1.3) {TaxiUI\\\footnotesize(fábricas)};
+  \node[caja, minimum width=3.4cm, fill=azul!15, align=center] (base) at (5.2,-0.6) {Núcleo abstracto\\\footnotesize Finder / Selector / Dispatcher\\\footnotesize(clases base)};
+  \node[caja, minimum width=2.2cm, fill=verde!15] (rides) at (3.4,-2.9) {Rides};
+  \node[caja, minimum width=2.2cm, fill=verde!25] (kit) at (7.0,-2.9) {Kittens\\\footnotesize(nuevo)};
+  \draw[dep] (ui2) -- (base);
+  \draw[dep] (ui2) |- (rides.west);
+  \draw[impl] (rides) -- (base);
+  \draw[impl] (kit) -- (base);
+  \node[font=\scriptsize, verde!70!black, align=center] at (5.2,-4.0) {Gatitos: se añade un componente\\y solo cambia la UI};
+\end{tikzpicture}
+\caption{Kitty Problem. En (a) la nueva funcionalidad atraviesa todos los servicios. En (b) se añade como un componente que extiende abstracciones del núcleo. Elaboración propia a partir de Martin (2017, pp. 242--246).}
+\label{fig:kitty}
+\end{figure}
+
+\begin{lstlisting}[caption={Esbozo del núcleo abstracto y de los componentes que lo extienden.}]
+// ===== Componente nucleo (estable, cerrado a modificacion) =====
+public abstract class TransportRequest { public Location Pickup { get; init; } }
+
+public interface ICandidateFilter      { bool Accepts(Vehicle v, TransportRequest r); }
+public interface IDispatchPlan        { IEnumerable<Stop> BuildRoute(TransportRequest r); }
+
+public abstract class TransportService      // Template Method
+{
+    protected abstract IEnumerable<ICandidateFilter> Filters { get; }
+    protected abstract IDispatchPlan Plan { get; }
+
+    public Vehicle Handle(TransportRequest request, IEnumerable<Vehicle> fleet)
+    {
+        var candidate = fleet.First(v => Filters.All(f => f.Accepts(v, request)));
+        candidate.AssignRoute(Plan.BuildRoute(request));
+        return candidate;
+    }
+}
+
+// ===== Componente Rides (comportamiento original extraido) =====
+public class RideService : TransportService { /* filtros de lujo, coste, etc. */ }
+
+// ===== Componente Kittens (nuevo; se despliega como una DLL adicional) =====
+public class KittenDeliveryService : TransportService
+{
+    protected override IEnumerable<ICandidateFilter> Filters => new ICandidateFilter[] {
+        new ParticipatingSupplierFilter(), new DriverNotAllergicFilter() };
+    protected override IDispatchPlan Plan => new ViaCollectionPointPlan();
+}
+// La regla "vehiculo con gatitos en los ultimos 3 dias" se agrega como un filtro
+// adicional en Rides para clientes alergicos, sin modificar el nucleo.
+\end{lstlisting}
+
+\subsection{Relación con el OCP y con DDD / Onion / Clean}
+
+\paragraph{Principio Abierto/Cerrado.} Martin (2017, p. 70) define el OCP como: \emph{un artefacto de software debe estar abierto a la extensión pero cerrado a la modificación}. Y advierte que, si extensiones simples de los requisitos obligan a cambios masivos en el software, los arquitectos han fracasado de manera espectacular. El \emph{Kitty Problem} es justamente ese fracaso. Con la solución propuesta, los servicios pueden pensarse como un conjunto de clases abstractas en uno o varios \texttt{jar}, y cada nueva funcionalidad como otro \texttt{jar} con clases que las extienden. Desplegar una funcionalidad deja de ser redesplegar servicios y pasa a ser añadir ficheros a la ruta de carga: \emph{añadir funcionalidades se ajusta al Principio Abierto/Cerrado} (Martin, 2017, p. 246).
+
+\paragraph{Papel de los adaptadores en la extensión.} En la solución, \texttt{Rides} y \texttt{Kittens} cumplen el mismo papel que un adaptador en la Arquitectura Hexagonal: se conectan a una abstracción definida por el núcleo (el ``puerto'' que forman las clases base y las interfaces como \texttt{ICandidateFilter}) y aportan una implementación concreta. El núcleo no conoce sus nombres, y por tanto cumplen la Regla de Dependencia. La selección del componente concreto se hace en el punto de composición: en la propuesta de Martin, las fábricas controladas por la UI. Es la misma idea de arquitectura de \emph{plugins} que Martin (2017, pp. 170--171) presenta para la base de datos y la interfaz gráfica: las reglas de negocio centrales se mantienen separadas e independientes de los componentes opcionales o que pueden implementarse de muchas formas.
+
+\paragraph{Aporte de DDD.} Desde DDD, el error inicial fue trazar las fronteras según la mecánica del proceso y no según el lenguaje del negocio. Si se hubiera dialogado con los expertos del dominio, habría aparecido un concepto más general que ``viaje'': por ejemplo, \emph{servicio de transporte}, del cual el viaje de pasajeros es una variante. Modelar explícitamente ese concepto en el núcleo, con sus variaciones como extensiones, es lo que permite absorber el cambio.
+
+\paragraph{La lección arquitectónica.} Martin (2017, pp. 246--247) concluye que las fronteras arquitectónicas \emph{no caen entre servicios, sino que los atraviesan}, dividiéndolos en componentes. Los servicios, por útiles que sean para la escalabilidad, no son por sí mismos elementos arquitectónicamente significativos: la arquitectura se define por las fronteras internas y por las dependencias que las cruzan. Para el equipo, esta es probablemente la idea más importante de toda la pregunta: \emph{separar físicamente no es lo mismo que desacoplar}.
+
+% ============================================================
+\section{Pregunta 6. N-Capas frente a requisitos de atributos de calidad}
+% ============================================================
+
+\subsection{El punto de partida}
+
+Richards (2015, pp. 8--9) califica la arquitectura en capas con una puntuación \textbf{baja} en agilidad general, facilidad de despliegue, rendimiento y escalabilidad, y \textbf{alta} en testabilidad y facilidad de desarrollo. En la obra posterior, Richards y Ford (2020, cap. 10) mantienen la valoración de una estrella en elasticidad y escalabilidad, y dos en rendimiento, y además rebajan la testabilidad, porque en un monolito grande pocos desarrolladores ejecutan toda la batería de regresión para un cambio pequeño.
+
+Un estudiante propone mitigar estas debilidades con \textbf{capas abiertas} y la técnica \emph{fast-lane reader}. El equipo analiza la propuesta a continuación.
+
+\subsection{Qué son las capas abiertas y el \emph{fast-lane reader}}
+
+En una arquitectura en capas, cada capa puede ser \emph{cerrada} o \emph{abierta}. Una capa cerrada obliga a que la petición pase por ella antes de llegar a la siguiente; una capa abierta permite saltarla (Richards, 2015, pp. 3--5). Richards y Ford (2020, cap. 10) explican que, para consultas simples, sería más rápido que la presentación accediera directamente a la base de datos, saltándose las capas intermedias; a principios de los 2000 esto se conocía como el patrón \emph{fast-lane reader}. Para lograrlo, las capas de negocio y persistencia tendrían que ser abiertas.
+
+\subsection{Efecto sobre el Aislamiento de Capas y la mantenibilidad}
+
+El concepto de \textbf{capas de aislamiento} (\emph{layers of isolation}) significa que los cambios en una capa no afectan a componentes de otras capas, siempre que los contratos entre ellas se mantengan (Richards \& Ford, 2020, cap. 10). Pero los autores son claros: \emph{para garantizar el aislamiento, las capas que participan en el flujo principal de la petición tienen que ser cerradas}. Si la presentación accede directamente a la persistencia, los cambios en la persistencia afectan tanto al negocio como a la presentación, lo que da lugar a una aplicación muy acoplada, frágil y costosa de cambiar (Richards, 2015, pp. 3--4).
+
+Por tanto, abrir capas para ganar rendimiento implica \textbf{sacrificar directamente el aislamiento}, que es la principal virtud del estilo. A largo plazo:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item Un cambio en el esquema de la base de datos ya no queda contenido en la capa de persistencia, sino que se propaga hacia la interfaz de usuario. Este es precisamente el síntoma del sistema de inventario de la Pregunta 1.
+  \item La lógica de negocio comienza a duplicarse: si la presentación lee directamente, tarde o temprano aparecerán filtros o cálculos de negocio en la presentación.
+  \item Las reglas de acceso se vuelven difíciles de gobernar. Richards (2015, p. 5) advierte que no documentar o comunicar qué capas son abiertas y cerradas, y por qué, suele dar lugar a arquitecturas acopladas y frágiles, muy difíciles de probar, mantener y desplegar.
+\end{itemize}
+
+Hay que precisar que Richards (2015, p. 4) sí admite capas abiertas en casos concretos, como una capa de servicios compartidos que el negocio puede saltarse para llegar a la persistencia. La diferencia está en abrir \emph{una capa de apoyo} de forma documentada, frente a abrir \emph{el flujo principal} para evitar trabajo.
+
+\subsection{El \emph{sinkhole anti-pattern} y la regla 80/20}
+
+El antipatrón \textbf{sumidero de arquitectura} (\emph{architecture sinkhole}) describe el caso en que las peticiones atraviesan varias capas como simple paso de datos, sin que ninguna aplique lógica. Por ejemplo, la presentación pide datos del cliente, el negocio los pide a la persistencia, la persistencia ejecuta un SQL y los datos suben sin transformación alguna (Richards, 2015, p. 7). Esto provoca instanciación y procesamiento innecesarios que afectan al consumo de memoria y al rendimiento (Richards \& Ford, 2020, cap. 10).
+
+La \textbf{regla 80/20} sirve para diagnosticarlo: toda arquitectura en capas tendrá algunos casos de sumidero, y es aceptable que alrededor del 20\,\% de las peticiones sean de simple paso. Si la proporción se invierte y el 80\,\% de las peticiones son sumideros, es una señal de que la arquitectura en capas no es el estilo adecuado para el dominio del problema (Richards \& Ford, 2020, cap. 10).
+
+El análisis del equipo es que la propuesta del estudiante \emph{confunde el síntoma con la causa}. Las capas abiertas son, según los propios autores, una forma de mitigar el sumidero, pero con el coste explícito de que \emph{será más difícil controlar el cambio por la falta de aislamiento} (Richards, 2015, pp. 7--8). Si el sistema tiene mayoritariamente sumideros, abrir las capas no corrige el diagnóstico: confirma que el estilo no se ajusta al problema. Y si el sistema tiene sobre todo peticiones con lógica, abrir capas no aporta casi nada, porque esas peticiones deben pasar por el negocio de todos modos. En ningún caso se resuelve la raíz.
+
+\subsection{Por qué las capas abiertas no resuelven la escalabilidad ni la agilidad}
+
+Más allá del rendimiento local, el problema de fondo es estructural:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Escalabilidad.} La arquitectura en capas es siempre un único \emph{quantum} arquitectónico, con interfaz, lógica y base de datos monolíticas, de modo que solo escala hasta cierto punto (Richards \& Ford, 2020, cap. 10). Se puede replicar la aplicación completa en varios nodos, pero la granularidad es demasiado gruesa y resulta cara (Richards, 2015, p. 9). Saltarse capas no cambia el número de unidades desplegables ni permite escalar una parte del sistema sin escalar el resto.
+  \item \textbf{Facilidad de despliegue.} Un cambio de tres líneas exige redesplegar toda la unidad, con el riesgo de que otros cambios se cuelen en el mismo despliegue (Richards \& Ford, 2020, cap. 10). Abrir capas no modifica esta situación.
+  \item \textbf{Agilidad.} Es baja por la naturaleza monolítica y el acoplamiento fuerte (Richards, 2015, p. 8). Las capas abiertas \emph{aumentan} el acoplamiento, así que empeoran la agilidad.
+\end{itemize}
+
+En resumen, el \emph{fast-lane reader} es una optimización local de rendimiento que se paga con mantenibilidad, y que no afecta a los atributos que realmente penalizan al estilo: escalabilidad, despliegue y agilidad.
+
+\subsection{Por qué Hexagonal o Clean son más adecuadas, y con qué matices}
+
+Para un sistema con requisitos de alta agilidad y escalabilidad, el equipo considera que las arquitecturas Hexagonal y Limpia, combinadas con DDD, son más adecuadas por las siguientes razones:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Agilidad por dependencias invertidas.} Como la infraestructura depende del núcleo y no al revés, los cambios tecnológicos quedan localizados en adaptadores (Martin, 2017, p. 203; Palermo, 2008c). Las reglas de negocio se prueban en aislamiento y con rapidez (Martin, 2017, p. 202; Cockburn, 2005), lo que reduce el riesgo de cada cambio y permite cambiar más a menudo.
+  \item \textbf{Partición por dominio.} Al combinarse con DDD, el sistema se organiza en contextos delimitados y no en capas técnicas. Richards y Ford (2020, cap. 8) señalan que la partición por dominio se modela de forma más cercana al funcionamiento del negocio, se alinea con los estilos de monolito modular y microservicios, y \emph{facilita migrar datos y componentes a una arquitectura distribuida}.
+  \item \textbf{Escalabilidad como evolución posible.} Un contexto delimitado bien aislado, con su propio modelo, sus propios datos y comunicación por puertos, puede extraerse como servicio independiente y escalarse por separado. Richards y Ford (2020, cap. 17) describen los microservicios como la encarnación física de los conceptos lógicos de DDD, donde cada servicio modela un \emph{bounded context}. Un monolito en capas técnicas no ofrece esas costuras: el dominio está esparcido por todas las capas.
+\end{enumerate}
+
+No obstante, el equipo considera necesario matizar la afirmación de que estas arquitecturas sean \emph{inherentemente} más escalables. Hexagonal, Clean y Onion son, ante todo, formas de organizar las \emph{dependencias de código fuente}, no topologías de despliegue. Una aplicación Clean desplegada como un único ejecutable con una única base de datos sigue siendo un solo \emph{quantum} y escala igual que un monolito en capas. Martin (2017, p. 247) insiste en que la arquitectura se define por las fronteras y las dependencias, no por los mecanismos físicos de despliegue. Y Palermo (2008a) aclara que su enfoque no es apropiado para sitios pequeños.
+
+Por tanto, la conclusión más precisa es la siguiente: estas arquitecturas \textbf{no garantizan} la escalabilidad, pero sí la \textbf{hacen posible} con un coste razonable, porque crean las fronteras por las que el sistema puede dividirse cuando haga falta. En cambio, sí mejoran de forma directa la agilidad y la testabilidad. La arquitectura en capas con optimizaciones, en cambio, sigue estando limitada por su naturaleza monolítica y técnicamente particionada.
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Atributo} & \textbf{N-Capas (capas cerradas)} & \textbf{N-Capas + capas abiertas / fast-lane} & \textbf{Hexagonal / Clean + DDD} \\
+\midrule
+Rendimiento en lecturas simples & Bajo (sumidero) & Mejora local & Similar; se puede añadir un adaptador de lectura sin romper la Regla de Dependencia \\
+Aislamiento / mantenibilidad & Medio & Empeora & Alto \\
+Agilidad & Baja & Empeora & Alta \\
+Facilidad de despliegue & Baja & Sin cambios & Depende del despliegue; los contextos pueden separarse \\
+Escalabilidad & Baja (un solo \emph{quantum}) & Sin cambios & Habilitada por la partición en contextos \\
+Testabilidad del negocio & Media & Empeora & Alta \\
+\bottomrule
+\end{tabularx}
+\caption{Valoración comparativa del equipo, basada en Richards (2015, pp. 8--9), Richards y Ford (2020, caps. 8, 10 y 17) y Martin (2017, pp. 202--207).}
+\end{table}
+
+% ============================================================
+\section{Conclusiones}
+% ============================================================
+
+El análisis de las seis preguntas permite al equipo extraer varias conclusiones generales:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{La diferencia esencial entre los estilos estudiados no está en la forma del dibujo, sino en la dirección de las dependencias.} N-Capas pone la base de datos en el fondo y hace que todo dependa de ella. Hexagonal, Onion y Clean ponen el dominio en el centro y hacen que la infraestructura dependa de él. Palermo (2008c) lo muestra al dibujar las capas como círculos y las cebollas como capas: la forma es intercambiable, la estructura no.
+  \item \textbf{Hexagonal, Onion y Clean son variaciones de una misma idea.} Martin (2017, p. 202) reconoce que estas arquitecturas tienen el mismo objetivo, la separación de responsabilidades, y producen sistemas independientes de \emph{frameworks}, de la interfaz, de la base de datos y de cualquier agente externo, además de testables. Cada una aporta un énfasis distinto: Cockburn, la simetría interior-exterior; Palermo, el modelo de dominio en el centro; Martin, la formulación precisa de la regla.
+  \item \textbf{El Principio de Inversión de Dependencias es el mecanismo que las hace posibles.} Las preguntas 1, 2 y 4 muestran el mismo patrón: definir la interfaz en el núcleo, implementarla en el exterior y componer en un único punto.
+  \item \textbf{DDD aporta el criterio para trazar las fronteras.} Las arquitecturas anteriores dicen \emph{cómo} proteger el núcleo; DDD dice \emph{qué} es el núcleo y dónde termina cada modelo. Las preguntas 3 y 5 muestran que unas fronteras mal elegidas, ya sea un modelo único de póliza o servicios divididos por verbos, generan acoplamiento aunque los componentes estén separados físicamente.
+  \item \textbf{Ningún estilo es superior en todos los casos.} La arquitectura N-Capas sigue siendo una opción razonable para aplicaciones pequeñas, centradas en datos o con poca lógica de negocio (Richards \& Ford, 2020, cap. 10; De la Torre et al., 2010, p. 42). Las arquitecturas orientadas al dominio añaden complejidad que solo se justifica cuando la lógica del negocio es compleja y el sistema debe vivir y evolucionar durante años.
+\end{enumerate}
+
+En definitiva, elegir una arquitectura es elegir qué se quiere que sea fácil de cambiar. Si lo que más cambia es la tecnología, la infraestructura debe estar en el exterior; si lo que más cambia es el negocio, el negocio debe estar bien delimitado en contextos. Las arquitecturas estudiadas, combinadas con DDD, permiten conseguir ambas cosas a la vez, a cambio de una mayor disciplina de diseño.
+
+% ============================================================
+\section*{Referencias bibliográficas}
+\addcontentsline{toc}{section}{Referencias bibliográficas}
+% ============================================================
+
+\begin{list}{}{\leftmargin=1.5em \itemindent=-1.5em \itemsep=0.6em}
+\item Cockburn, A. (2005). \emph{Hexagonal architecture (Ports and adapters)} [HaT Technical Report 2005.02]. Recuperado de \url{https://alistair.cockburn.us/hexagonal-architecture/}
+
+\item De la Torre Llorente, C., Zorrilla Castro, U., Ramos Barroso, M. A., \& Calvarro Nelson, J. (2010). \emph{Guía de Arquitectura N-Capas orientada al Dominio con .NET 4.0} (Borrador). Microsoft Ibérica; Krasis Consulting.
+
+\item Evans, E. (2003). \emph{Domain-Driven Design: Tackling complexity in the heart of software}. Addison-Wesley.
+
+\item Martin, R. C. (2017). \emph{Clean Architecture: A craftsman's guide to software structure and design}. Prentice Hall.
+
+\item Palermo, J. (2008a, 29 de julio). \emph{The Onion Architecture: part 1}. Programming with Palermo. \url{https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/}
+
+\item Palermo, J. (2008b, 30 de julio). \emph{The Onion Architecture: part 2}. Programming with Palermo. \url{https://jeffreypalermo.com/2008/07/the-onion-architecture-part-2/}
+
+\item Palermo, J. (2008c, 4 de agosto). \emph{The Onion Architecture: part 3}. Programming with Palermo. \url{https://jeffreypalermo.com/2008/08/the-onion-architecture-part-3/}
+
+\item Richards, M. (2015). \emph{Software architecture patterns}. O'Reilly Media.
+
+\item Richards, M., \& Ford, N. (2020). \emph{Fundamentals of software architecture: An engineering approach}. O'Reilly Media.
+\end{list}
+
+\newpage
+% ============================================================
+\section*{Declaración de Uso de la Inteligencia Artificial}
+\addcontentsline{toc}{section}{Declaración de Uso de la Inteligencia Artificial}
+% ============================================================
+
+En la elaboración del presente documento se utilizaron las herramientas de inteligencia artificial \textbf{Gemini} y \textbf{ChatGPT}. Su propósito principal fue realizar resúmenes y facilitar una mejor comprensión de la información aportada por la bibliografía recomendada, dado que las fuentes consultadas son considerablemente extensas.
+
+El contenido de este trabajo fue extraído por los integrantes del equipo mediante el estudio de las fuentes bibliográficas recomendadas y redactado por ellos. Posteriormente, se empleó la inteligencia artificial para enriquecer y mejorar la redacción de los textos.
+
+La totalidad del contenido fue revisada, analizada y verificada en conjunto por los integrantes del equipo, quienes asumen la responsabilidad final del documento. A pesar del uso de la inteligencia artificial como herramienta de apoyo, los integrantes tienen pleno dominio de los temas tratados en cada una de las preguntas.
+
+\end{document}
