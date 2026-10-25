@@ -1,6 +1,7 @@
 using Azure.Identity;
 using Smart_Routes.Application.Common.Interfaces;
 using Smart_Routes.Infrastructure.Data;
+using Smart_Routes.Infrastructure.Identity;
 using Smart_Routes.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ public static class DependencyInjection
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         builder.Services.AddScoped<IUser, CurrentUser>();
+        builder.Services.AddScoped<IRoleManager, MyRoleManager>();
 
         builder.Services.AddHttpContextAccessor();
 

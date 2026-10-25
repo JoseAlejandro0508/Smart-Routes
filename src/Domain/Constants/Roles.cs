@@ -9,4 +9,8 @@ public abstract class Roles
     public const string OperationsSupervisor = nameof(OperationsSupervisor);
 
     public const string DeliveryPerson = nameof(DeliveryPerson);
+    public static bool IsValidRole(string role)
+    {
+        return role == Administrator || role == LogisticsCoordinator || role == OperationsSupervisor || role == DeliveryPerson;
+    }
 }
