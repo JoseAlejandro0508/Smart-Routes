@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Smart_Routes.Domain.Constants;
 using Smart_Routes.Application.UserRoles.Commands.UpdateUserRole;
 using Smart_Routes.Application.UserRoles.Commands.DeleteUserRole;
-using Smart_Routes.Application.UserRoles.Commands.GetAllUserRoles;
+using Smart_Routes.Application.UserRoles.Queries.GetAllUserRoles;
 using Smart_Routes.Application.Common.Interfaces;
 
 
@@ -21,6 +21,9 @@ public class Admin : IEndpointGroup
             Roles = $"{Roles.Administrator}"
         }));
         groupBuilder.MapPut(AddRole, "addrole");
+        groupBuilder.MapGet(GetAllusersRoles, "getallusersroles");
+        groupBuilder.MapDelete(DeleteRole, "deleterole/{userId}");
+    
     }
 
     [EndpointSummary("Add Role")]
@@ -33,9 +36,9 @@ public class Admin : IEndpointGroup
     }
     [EndpointSummary("Delete Role")]
     [EndpointDescription("Remove a Role from the specified user")]
-    public static async Task<Results<NoContent, BadRequest>> DeleteRole(ISender sender, DeleteUserRoleCommand request)
+    public static async Task<Results<NoContent, BadRequest>> DeleteRole(ISender sender, string userId)
     {
-        await sender.Send(request);
+        await sender.Send(new DeleteUserRoleCommand { UserId = userId });
         return TypedResults.NoContent();
 
     }
@@ -43,7 +46,7 @@ public class Admin : IEndpointGroup
     [EndpointDescription("Retruns a list where each object is a userId with the  asociated role for that user")]
     public static async Task<Results<Ok<List<IUser>>,BadRequest>> GetAllusersRoles(ISender sender)
     {
-        List<IUser> usersRoles = await sender.Send(new GetAllUserRolesCommand());
+        List<IUser> usersRoles = await sender.Send(new GetAllUserRolesQuery());
         return TypedResults.Ok(usersRoles);
     }
 }
