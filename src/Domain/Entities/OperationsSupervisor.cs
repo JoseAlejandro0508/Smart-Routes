@@ -6,8 +6,9 @@ namespace Smart_Routes.Domain.Entities;
 /// </summary>
 public class OperationsSupervisor : BaseUserProfile
 {
+    public required string UserId { get; set; }
     /// <summary>Control area (area_control).</summary>
-    public string ControlArea { get; set; } = string.Empty;
+    public required string ControlArea { get; set; } = string.Empty;
 
     /// <summary>REVISA: reviews made by this supervisor.</summary>
     public IList<Review> Reviews { get; private set; } = new List<Review>();

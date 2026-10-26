@@ -9,11 +9,12 @@ namespace Smart_Routes.Domain.Entities;
 /// </remarks>
 public class DeliveryPerson : BaseUserProfile
 {
-    /// <summary>Date of birth. The report stores edad (age at least 18); age is derived from this date.</summary>
+    public required string UserId { get; set; } 
+
     public DateOnly DateOfBirth { get; set; }
 
     /// <summary>Fleet the delivery person belongs to (flota).</summary>
-    public string Fleet { get; set; } = string.Empty;
+    public required string Fleet { get; set; }
 
     /// <summary>ASIGNADO_A: centers where the delivery person can receive routes.</summary>
     public IList<DeliveryPersonCenter> AssignedCenters { get; private set; } = new List<DeliveryPersonCenter>();

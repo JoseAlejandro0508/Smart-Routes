@@ -6,8 +6,10 @@ namespace Smart_Routes.Domain.Entities;
 /// </summary>
 public class LogisticsCoordinator : BaseUserProfile
 {
+
+    public required string UserId { get; set;} 
     /// <summary>Specialty (especialidad).</summary>
-    public string Specialty { get; set; } = string.Empty;
+    public required string Specialty { get; set; }
 
     /// <summary>AUTORIZADO_EN: centers where the coordinator can enter orders and generate routes.</summary>
     public IList<CoordinatorCenter> AuthorizedCenters { get; private set; } = new List<CoordinatorCenter>();
