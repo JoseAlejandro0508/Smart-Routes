@@ -1,6 +1,7 @@
 ﻿using Smart_Routes.Application.Common.Interfaces;
 using Smart_Routes.Infrastructure.Data;
 using Smart_Routes.Infrastructure.Data.Interceptors;
+using Smart_Routes.Infrastructure.Data.Repositories;
 using Smart_Routes.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public static class DependencyInjection
         builder.EnrichSqlServerDbContext<ApplicationDbContext>();
 
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 

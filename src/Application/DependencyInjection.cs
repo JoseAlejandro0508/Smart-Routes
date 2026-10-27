@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Smart_Routes.Application.Common.Behaviours;
+using Smart_Routes.Domain.Factories;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,8 @@ public static class DependencyInjection
     {
         builder.Services.AddAutoMapper(cfg => 
             cfg.AddMaps(Assembly.GetExecutingAssembly()));
+
+        builder.Services.AddSingleton<OrderFactory>();
 
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
