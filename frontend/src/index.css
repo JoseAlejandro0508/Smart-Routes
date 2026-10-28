@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/* ─── Ojos de la ilustración de auth ────────────────────────────────
+   Seguimiento del cursor: AuthIllustration escribe --pupil-dx / --pupil-dy
+   EN CADA .pupil (vector individual pupila→cursor, en coords del viewBox).
+   El estado "tapado" lo activa AuthLayout: cuando el foco cae en cualquier
+   input[type=password], el contenedor recibe data-eyes="cover".
+   Técnica de párpado deslizante (estándar en personajes SVG). */
+
+.auth-eyes .pupil {
+  transform: translate(var(--pupil-dx, 0px), var(--pupil-dy, 0px));
+  transition: transform 0.12s ease-out;
+}
+
+/* Contraseña enfocada → todos los ojos miran a otro lado:
+   a la IZQUIERDA en escritorio, hacia ARRIBA en móvil (< lg, el mismo
+   corte donde la ilustración pasa de franja a columna). La dirección
+   fija pisa las variables del seguimiento: dejan de seguirte. */
+[data-eyes="cover"] .pupil {
+  transform: translate(-4px, 0);
+  transition: transform 0.25s ease;
+}
+
+@media (max-width: 1023.98px) {
+  [data-eyes="cover"] .pupil {
+    transform: translate(0, -4px);
+  }
+}
+
+.auth-eyes .eyelid {
+  transform-box: fill-box;   /* los porcentajes se miden sobre el propio círculo */
+  transform-origin: center;
+  transform: translateY(-105%); /* reposo: escondido contra el cuerpo */
+  animation: parpadeo 5s infinite;
+  transition: transform 0.25s ease; /* apertura = el mismo gesto del pestañeo */
+}
+
+[data-eyes="cover"] .eyelid {
+  animation: none;           /* el parpadeo no pelea con el "tapado" */
+  transform: translateY(0);  /* baja recto hacia abajo y SE QUEDA cerrado */
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1); /* cierre lento y visible */
+}
+
+/* Pestañeo: baja recto (250ms), sube recto (250ms). Es VERTICAL
+   siempre — el párpado no gira hacia donde miran las pupilas. */
+@keyframes parpadeo {
+  0%, 90%, 100% { transform: translateY(-105%); }
+  95%           { transform: translateY(0); }
+}
+
+/* ─── Escena viva: viento, mecido y bocas ───────────────────────────
+   Patrón "hierba con viento": cada personaje rota ±1.4° desde sus pies
+   con duración y delay PROPIOS (inline en el SVG) → movimiento orgánico,
+   nadie se mece en fila. Las sombras quedan fuera del grupo. */
+
+.blob {
+  transform-box: fill-box;
+  transform-origin: bottom center; /* mecido desde los pies */
+  animation-name: mecer;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes mecer {
+  0%, 100% { transform: rotate(-1.4deg); }
+  50%      { transform: rotate(1.4deg); }
+}
+
+/* Ráfagas de viento: cruzan el panel y se desvanecen (patrón "gust") */
+.rafaga {
+  animation-name: rafaga;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rafaga {
+  0%   { transform: translateX(-80px); opacity: 0; }
+  12%  { opacity: 0.85; }
+  85%  { opacity: 0.85; }
+  100% { transform: translateX(560px); opacity: 0; }
+}
+
+/* Bocas vivas: el mismo truco del parpadeo — quietas el 80% del ciclo,
+   acción breve, cada una con su ritmo (delays inline en el SVG) */
+.mouth-talk,
+.mouth-pop,
+.mouth-smile {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.mouth-talk  { animation-name: murmurar; }  /* rects: murmuran (scaleY) */
+.mouth-pop   { animation-name: oh; }        /* círculo coral: "oh!" (scale) */
+.mouth-smile { animation-name: sonrisita; } /* sonrisa azul: se agranda */
+
+@keyframes murmurar {
+  0%, 72%, 100% { transform: scaleY(1); }
+  82%           { transform: scaleY(1.45); }
+  91%           { transform: scaleY(1); }
+}
+
+@keyframes oh {
+  0%, 80%, 100% { transform: scale(1); }
+  87%           { transform: scale(1.35); }
+}
+
+@keyframes sonrisita {
+  0%, 84%, 100% { transform: scaleX(1); }
+  91%           { transform: scaleX(1.2); }
+}
+
+/* Respeto por quienes prefieren menos animación: la escena queda
+   estática (las ráfagas ni siquiera aparecen: su opacity base es 0) */
+@media (prefers-reduced-motion: reduce) {
+  .auth-eyes .pupil,
+  .auth-eyes .eyelid,
+  .blob,
+  .rafaga,
+  .mouth-talk,
+  .mouth-pop,
+  .mouth-smile {
+    animation: none;
+    transition: none;
+  }
+}
