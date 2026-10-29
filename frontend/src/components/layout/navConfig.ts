@@ -3,7 +3,11 @@
 // icono y a qué ROLES se muestra. El menú se auto-filtra según el usuario
 // de la sesión → agregar una sección nueva es añadir UNA LÍNEA aquí,
 // no tocar el componente del menú.
-// Los roles son los del contrato real del backend (Roles.cs).
+//
+// User['role'] es un "indexed access type": extrae del interface User la
+// unión con los roles REALES del backend (Roles.cs). Una sola fuente de
+// verdad: si el backend añade un rol y actualizamos User, este archivo
+// se actualiza solo.
 import {
   BarChart3,
   Home,
@@ -13,17 +17,17 @@ import {
   UserCog,
   Warehouse,
 } from 'lucide-react'
-import type { UserRole } from '../../api/auth.api'
+import type { User } from '../../api/auth.api'
 
 export interface NavItem {
   to: string
   label: string
   icon: typeof Home // tipo de un icono lucide (todos comparten firma)
-  roles: UserRole[]
+  roles: User['role'][]
 }
 
 // Etiquetas legibles para los roles del contrato (UI en español)
-export const ROLE_LABELS: Record<UserRole, string> = {
+export const ROLE_LABELS: Record<User['role'], string> = {
   Administrator: 'Administrador',
   LogisticsCoordinator: 'Coordinador logístico',
   OperationsSupervisor: 'Supervisor de operaciones',
@@ -34,13 +38,13 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 //  - Pedidos/Rutas/Reportes: todos los roles los ven (quién EDITA se
 //    decidirá dentro de cada sección)
 //  - Repartidores/Centros/Administración: gestión del administrador
-const TODOS: UserRole[] = [
+const TODOS: User['role'][] = [
   'Administrator',
   'LogisticsCoordinator',
   'OperationsSupervisor',
   'DeliveryPerson',
 ]
-const SOLO_ADMIN: UserRole[] = ['Administrator']
+const SOLO_ADMIN: User['role'][] = ['Administrator']
 
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio', icon: Home, roles: TODOS },
