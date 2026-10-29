@@ -2,15 +2,14 @@
 // Solo vive en memoria: si recargas la página, se resetea.
 // Es el equivalente a "reiniciar el servidor" del backend real.
 
-
-
+import type { UserRole } from '../api/auth.api'
 
 export interface MockUser {
   id: string
   name: string
   email: string
   passwordHash: string          // nunca guardamos la contraseña en claro
-  role: 'user' | 'admin'
+  role: UserRole                // roles REALES del backend (Roles.cs)
   twoFactorEnabled: boolean
   failedAttempts: number        // para el bloqueo por intentos (login "duro")
 }
@@ -23,12 +22,14 @@ export function hashPassword(plain: string): string {
   return `mock$${btoa(plain)}` // btoa = codificación base64 en el navegador
 }
 
+// Un usuario de prueba POR CADA rol del contrato — así el menú por rol
+// se puede verificar completo sin que el backend esté corriendo.
 const ANA: MockUser = {
   id: 'usr_01',
   name: 'Ana Demo',
   email: 'ana@demo.dev',
   passwordHash: hashPassword('Password123!'),
-  role: 'user',
+  role: 'LogisticsCoordinator', // coordinadora logística: crea pedidos y rutas
   twoFactorEnabled: true,       // Ana usa 2FA → nos permite probar ese flujo
   failedAttempts: 0,
 }
@@ -38,7 +39,27 @@ const CARLOS: MockUser = {
   name: 'Carlos Demo',
   email: 'carlos@demo.dev',
   passwordHash: hashPassword('Password123!'),
-  role: 'admin',
+  role: 'Administrator',        // administrador: admin de usuarios y centros
+  twoFactorEnabled: false,
+  failedAttempts: 0,
+}
+
+const SOFIA: MockUser = {
+  id: 'usr_03',
+  name: 'Sofía Demo',
+  email: 'sofia@demo.dev',
+  passwordHash: hashPassword('Password123!'),
+  role: 'OperationsSupervisor', // supervisora: revisa y aprueba rutas
+  twoFactorEnabled: false,
+  failedAttempts: 0,
+}
+
+const MARCO: MockUser = {
+  id: 'usr_04',
+  name: 'Marco Demo',
+  email: 'marco@demo.dev',
+  passwordHash: hashPassword('Password123!'),
+  role: 'DeliveryPerson',       // repartidor: ejecuta rutas y registra entregas
   twoFactorEnabled: false,
   failedAttempts: 0,
 }
@@ -48,13 +69,13 @@ export function findUser(email: string): MockUser | undefined {
 }
 
 export const db = {
-  users: [ANA, CARLOS] as MockUser[],
+  users: [ANA, CARLOS, SOFIA, MARCO] as MockUser[],
   // Tokens de refresh "válidos" emitidos por sesiones activas
   refreshTokens: new Map<string, string>(), // refreshToken → userId
   // Retos de 2FA pendientes: challengeToken → userId
   twoFactorChallenges: new Map<string, string>(),
   // Tokens de restablecimiento pendientes: token → email del dueño
-  resetTokens: new Map<string, string>(),   // ← AÑADE ESTA LÍNEA
+  resetTokens: new Map<string, string>(),
 }
 
 // ── Persistencia del mock (el "servidor" no muere con cada F5) ──

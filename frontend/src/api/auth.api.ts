@@ -3,11 +3,19 @@ import { http } from './http'
 
 // Tipos del contrato (los mismos que definimos en MSW) 
 
+// Roles REALES del backend (src/Domain/Constants/Roles.cs del repo del
+// equipo). El contrato no inventa nombres: usa los que el .NET enviará.
+export type UserRole =
+  | 'Administrator'
+  | 'LogisticsCoordinator'
+  | 'OperationsSupervisor'
+  | 'DeliveryPerson'
+
 export interface User {
   id: string
   name: string
   email: string
-  role: 'user' | 'admin'
+  role: UserRole
 }
 
 interface LoginTokens {

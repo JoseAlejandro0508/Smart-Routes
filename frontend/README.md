@@ -75,10 +75,14 @@ La migración al backend real no requiere cambios de código: basta con desactiv
 
 ## 👥 Usuarios de prueba
 
-| Usuario | Contraseña | Rol | Observaciones |
+| Usuario | Contraseña | Rol (contrato backend) | Observaciones |
 |---|---|---|---|
-| `ana@demo.dev` | `Password123!` | user | 2FA habilitado; el código de verificación (`123456`) se imprime por consola |
-| `carlos@demo.dev` | `Password123!` | admin | Sin 2FA |
+| `ana@demo.dev` | `Password123!` | `LogisticsCoordinator` | 2FA habilitado; el código de verificación (`123456`) se imprime por consola |
+| `carlos@demo.dev` | `Password123!` | `Administrator` | Sin 2FA |
+| `sofia@demo.dev` | `Password123!` | `OperationsSupervisor` | Sin 2FA; valida y aprueba rutas |
+| `marco@demo.dev` | `Password123!` | `DeliveryPerson` | Sin 2FA; ve sus rutas y registra entregas |
+
+Los roles son los definidos en `src/Domain/Constants/Roles.cs` del backend — el mock usa los nombres exactos que enviará el .NET. El registro público crea `LogisticsCoordinator` por defecto; los demás roles los asigna un administrador.
 
 Por seguridad, la cuenta se bloquea temporalmente (HTTP 429) tras **5 intentos fallidos** de inicio de sesión.
 

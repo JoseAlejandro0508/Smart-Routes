@@ -57,7 +57,10 @@ export const handlers = [
       name: body.name,
       email: body.email.toLowerCase(),
       passwordHash: hashPassword(body.password),
-      role: 'user' as const,
+      // Rol por defecto del registro: quien se crea una cuenta trabaja
+      // como coordinador (crea pedidos y rutas). Los demás roles los
+      // asigna un Administrador (endpoint /admin/users de su contrato).
+      role: 'LogisticsCoordinator' as const,
       twoFactorEnabled: false,
       failedAttempts: 0,
     }
