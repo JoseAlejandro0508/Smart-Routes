@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ToastProvider } from './components/ui/Toast'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { ProfilePage } from './pages/ProfilePage'
-import { RequireAuth, RequireGuest } from './routes/guards'
+import { RequireAuth, RequireGuest, RequireRole } from './routes/guards'
 import { AuthLayout } from './pages/auth/AuthLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
@@ -12,6 +12,13 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { TwoFactorPage } from './pages/auth/TwoFactorPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { AppShell } from './components/layout/AppShell'
+import { PedidosPage } from './pages/PedidosPage'
+import { RutasPage } from './pages/RutasPage'
+import { ReportesPage } from './pages/ReportesPage'
+import { RepartidoresPage } from './pages/RepartidoresPage'
+import { CentrosPage } from './pages/CentrosPage'
+import { AdminUsersPage } from './pages/AdminUsersPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
@@ -46,9 +53,19 @@ export default function App() {
                 </Route>
 
                 <Route element={<RequireAuth />}>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/perfil" element={<ProfilePage />} />
-                  <Route path="*" element={<NotFoundPage />} />
+                  <Route element={<AppShell />}>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/pedidos" element={<PedidosPage />} />
+                    <Route path="/rutas" element={<RutasPage />} />
+                    <Route path="/reportes" element={<ReportesPage />} />
+                    <Route path="/perfil" element={<ProfilePage />} />
+                    <Route element={<RequireRole roles={['Administrator']} />}>
+                      <Route path="/repartidores" element={<RepartidoresPage />} />
+                      <Route path="/centros" element={<CentrosPage />} />
+                      <Route path="/admin" element={<AdminUsersPage />} />
+                    </Route>
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Route>
                 </Route>
               </Routes>
             </AuthProvider>

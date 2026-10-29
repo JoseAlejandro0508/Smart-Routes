@@ -29,7 +29,7 @@ export function RequireGuest() {
 // Ruta SOLO para ciertos roles. El menú oculta las opciones que no
 // corresponden, pero escribir la URL a mano siempre es posible: la UI
 // se defiende en el ROUTER, no solo en la vista (defensa en profundidad).
-export function RequireRole({ roles }: { roles: UserRole[] }) {
+export function RequireRole({ roles }: { roles: User['role'][] }) {
   const { user, isInitializing } = useAuth()
   const location = useLocation()
 
