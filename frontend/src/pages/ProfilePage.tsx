@@ -56,22 +56,21 @@ export function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100">
-      <div className="mx-auto flex max-w-md flex-col gap-6">
-        <section className="rounded-2xl bg-slate-900 p-6 ring-1 ring-slate-800">
-          <h1 className="text-2xl font-bold">Perfil</h1>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <section className="rounded-2xl border border-neutral-200 bg-white p-6">
+          <h1 className="text-2xl font-bold text-neutral-900">Perfil</h1>
           {user && (
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-neutral-500">
               {user.name} · {user.email} · rol: {user.role}
             </p>
           )}
-          <Link to="/" className="mt-3 inline-block text-sm text-blue-400 hover:underline">
-            ← Volver al inicio
+          <Link to="/" className="mt-3 inline-block text-sm text-neutral-600 hover:text-neutral-900 hover:underline">
+            Volver al inicio
           </Link>
-        </section>
+      </section>
 
-        <section className="rounded-2xl bg-slate-900 p-6 ring-1 ring-slate-800">
-          <h2 className="text-xl font-bold">Cambiar contraseña</h2>
+      <section className="rounded-2xl border border-neutral-200 bg-white p-6">
+          <h2 className="text-xl font-bold text-neutral-900">Cambiar contraseña</h2>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-4 flex flex-col gap-4">
             <TextField
               label="Contraseña actual"
@@ -94,7 +93,7 @@ export function ProfilePage() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  className="absolute top-9 right-3 text-sm text-slate-400 hover:text-slate-200"
+                  className="absolute top-9 right-3 text-sm text-neutral-400 hover:text-neutral-700"
                 >
                   {showPassword ? '🙈' : '👁'}
                 </button>
@@ -111,7 +110,7 @@ export function ProfilePage() {
             />
 
             {errors.root?.server && (
-              <p role="alert" className="rounded-lg bg-rose-950 px-3 py-2 text-sm text-rose-300">
+                <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
                 {errors.root.server.message}
               </p>
             )}
@@ -119,17 +118,16 @@ export function ProfilePage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+              className="rounded-lg bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-700 disabled:opacity-50"
             >
               {isSubmitting ? 'Actualizando…' : 'Actualizar contraseña'}
             </button>
 
-            <p className="text-xs text-slate-500">
-              🔒 Se cerrarán las sesiones activas en otros dispositivos.
+            <p className="text-xs text-neutral-500">
+              Se cerrarán las sesiones activas en otros dispositivos.
             </p>
           </form>
-        </section>
-      </div>
-    </main>
+      </section>
+    </div>
   )
 }

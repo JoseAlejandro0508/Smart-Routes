@@ -15,6 +15,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { AppShell } from './components/layout/AppShell'
 import { PedidosPage } from './pages/PedidosPage'
 import { RutasPage } from './pages/RutasPage'
+import { ReschedulingsPage } from './pages/ReschedulingsPage'
 import { ReportesPage } from './pages/ReportesPage'
 import { RepartidoresPage } from './pages/RepartidoresPage'
 import { CentrosPage } from './pages/CentrosPage'
@@ -57,6 +58,7 @@ export default function App() {
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/pedidos" element={<PedidosPage />} />
                     <Route path="/rutas" element={<RutasPage />} />
+                    <Route path="/reprogramaciones" element={<ReschedulingsPage />} />
                     <Route path="/reportes" element={<ReportesPage />} />
                     <Route path="/perfil" element={<ProfilePage />} />
                     <Route element={<RequireRole roles={['Administrator']} />}>

@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom'
 
 export function NotFoundPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 text-slate-100">
-      <p className="text-7xl font-black text-slate-800">404</p>
-      <h1 className="text-2xl font-bold">Esta página no existe</h1>
-      <p className="text-slate-400">La URL que buscas no coincide con ninguna ruta.</p>
+    <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+      <p className="text-7xl font-black text-neutral-200">404</p>
+      <h1 className="text-2xl font-bold text-neutral-900">Esta página no existe</h1>
+      <p className="text-neutral-500">La URL que buscas no coincide con ninguna ruta.</p>
       <Link
         to="/"
-        className="rounded-lg bg-blue-600 px-4 py-2 font-semibold hover:bg-blue-500"
+        className="rounded-lg bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-700"
       >
-        ← Volver al inicio
+        Volver al inicio
       </Link>
     </main>
   )

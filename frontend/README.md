@@ -1,3 +1,7 @@
+# Smart Routes — Frontend
+
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+# Frontend de Smart Routes: gestión de pedidos, generación y validación de rutas, operación de repartidores, reprogramaciones, administración de roles y reportes para una empresa de logística de última milla.
 # Sistema de Autenticación — Frontend
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
@@ -7,7 +11,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![MSW](https://img.shields.io/badge/MSW-3-FF6A33?logo=&logoColor=white)
 
-Frontend del sistema de autenticación del proyecto de Ingeniería de Software: registro, inicio de sesión con verificación en dos pasos (2FA), recuperación de contraseña, gestión de sesión con renovación automática de tokens y zona privada protegida por guardas de rutas.
+Frontend de Smart Routes: gestión de pedidos, generación y validación de rutas, operación de repartidores, reprogramaciones, administración de roles y reportes para una empresa de logística de última milla.
 
 La capa de red opera sobre una **API simulada con MSW (Mock Service Worker)** que actúa como *contrato ejecutable*: define de forma tipada los endpoints, payloads y códigos de estado que el backend real debe implementar. El frontend no requiere modificaciones para migrar a la API definitiva.
 
@@ -35,6 +39,10 @@ La capa de red opera sobre una **API simulada con MSW (Mock Service Worker)** qu
 | Recuperación | Solicitud de restablecimiento y cambio de contraseña mediante token de un solo uso |
 | Sesión | Tokens con rotación, renovación automática ante 401 sin interrumpir al usuario |
 | Zona privada | Guardas de rutas (autenticado / invitado), perfil y cambio de contraseña |
+| Operación | Dashboard con KPIs, banco de pedidos, rutas y reprogramaciones |
+| Repartidor | Rutas asignadas, registro de entregas e incidencias |
+| Administración | Gestión de roles para usuarios administradores |
+| Reportes | Seis consultas, ordenamiento por columnas y exportación mediante impresión PDF |
 | Resiliencia | Mensaje de estado offline, ErrorBoundary global, bloqueo temporal 429 con cuenta regresiva |
 | Notificaciones | Sistema de toasts global sobreviviente a la navegación |
 
@@ -57,10 +65,12 @@ La capa de red opera sobre una **API simulada con MSW (Mock Service Worker)** qu
 
 ```bash
 npm install
-npm run dev
+VITE_ENABLE_MOCKS=true npm run dev
 ```
 
 La aplicación se sirve en `http://localhost:5173`.
+
+Para usar el backend real, desactiva MSW y configura `VITE_API_URL` con la URL del servidor.
 
 ### Variables de entorno
 
@@ -212,6 +222,19 @@ Formato de tokens: JWT simulado `header.payload.firma`, con `sub` (identificador
 
 ## 📍 Estado del proyecto
 
+### Verificación manual de los módulos
+
+Con MSW activo, se pueden validar los flujos principales desde el navegador:
+
+1. Login con Carlos y revisión del Dashboard, Perfil y Administración.
+2. Login con Ana, código 2FA `123456`, alta de pedidos y generación de rutas.
+3. Login con Sofía, aprobación o rechazo de rutas; el rechazo exige observaciones.
+4. Login con Marco, consulta de rutas asignadas, registro de entregas e incidencias.
+5. Solicitud de reprogramación con Marco y resolución con Ana.
+6. Consulta de los seis reportes, ordenamiento por columna y exportación PDF.
+
+El mock vive en memoria. Los cambios de roles, pedidos y rutas no representan persistencia de producción; la persistencia definitiva corresponde al backend y su base de datos.
+
 | Estado | Elemento |
 |---|---|
 | ✅ Completado | Registro, login, 2FA (verificación y reenvío), bloqueo 429 |
@@ -219,6 +242,11 @@ Formato de tokens: JWT simulado `header.payload.firma`, con `sub` (identificador
 | ✅ Completado | Cambio de contraseña desde el perfil |
 | ✅ Completado | Gestión de sesión (refresh automático, logout, guardas de ruta) |
 | ✅ Completado | 404 propia, ErrorBoundary, toasts, estado offline |
+| ✅ Completado | AppShell responsive, navegación por rol y Dashboard con KPIs mock |
+| ✅ Completado | Pedidos, rutas, validación, entregas y reprogramaciones |
+| ✅ Completado | Administración de roles y seis reportes con exportación PDF |
+| 🔲 Pendiente | Conectar endpoints mock con la implementación real del backend |
+| 🔲 Pendiente | Implementar endpoints de centros y repartidores en el backend |
 | 🔲 Pendiente | Transiciones con Framer Motion |
 | 🔲 Pendiente | Modo oscuro/claro |
 | 🔲 Pendiente | Pruebas unitarias de schemas Zod (Vitest) |
