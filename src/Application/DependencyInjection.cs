@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Smart_Routes.Application.Common.Behaviours;
 using Smart_Routes.Domain.Factories;
+using Smart_Routes.Domain.Services;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,13 @@ public static class DependencyInjection
             cfg.AddMaps(Assembly.GetExecutingAssembly()));
 
         builder.Services.AddSingleton<OrderFactory>();
+
+        builder.Services.AddSingleton<IRouteBalanceMetricStrategy, OrderCountStrategy>();
+        builder.Services.AddSingleton<IRouteBalanceMetricStrategy, DeliveryTypeProportionStrategy>();
+        builder.Services.AddSingleton<IRouteBalanceMetricStrategy, ZoneCountStrategy>();
+        builder.Services.AddSingleton<IRouteBalanceMetricStrategy, TotalWeightStrategy>();
+        builder.Services.AddSingleton<IRouteBalanceMetricStrategy, StopCountStrategy>();
+        builder.Services.AddSingleton<RouteBalanceMetricCalculator>();
 
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
