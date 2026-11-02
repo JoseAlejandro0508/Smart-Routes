@@ -21,6 +21,7 @@ public static class DependencyInjection
         builder.Services.AddSingleton<IRouteBalanceMetricStrategy, TotalWeightStrategy>();
         builder.Services.AddSingleton<IRouteBalanceMetricStrategy, StopCountStrategy>();
         builder.Services.AddSingleton<RouteBalanceMetricCalculator>();
+        builder.Services.AddSingleton<RouteBalanceParameterEvaluator>();
 
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
