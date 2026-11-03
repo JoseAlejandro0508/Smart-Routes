@@ -9,11 +9,10 @@ namespace Smart_Routes.Infrastructure.Identity;
 /// </summary>
 public class ApplicationUser : IdentityUser
 {
-    /// <summary>Full name (nombre).</summary>
-    public string? Name { get; set; }
 
-    /// <summary>tipo_rol: indicates which subtype table holds the user's row (total, disjoint specialization).</summary>
-    public UserRole RoleType { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set;}
+
 
     /// <summary>activo: users are never deleted, only deactivated (RF-01).</summary>
     public bool Active { get; set; } = true;
