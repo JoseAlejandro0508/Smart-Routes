@@ -6,7 +6,7 @@ using Smart_Routes.Domain.Entities;
 
 
 namespace Smart_Routes.Application.DistributionCenters.Queries.GetAll;
-
+[Authorize]
 public record GetAllQuery : IRequest<IEnumerable<DistributionCenterReducedDto>>;
 
 public class GetAllQueryHandler : IRequestHandler<GetAllQuery, IEnumerable<DistributionCenterReducedDto>>
