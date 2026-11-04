@@ -5,13 +5,14 @@ using Smart_Routes.Domain.Entities;
 
 
 namespace Smart_Routes.Application.DistributionCenters.Commands.AddCoveredZone;
+
 [Authorize(Roles = Roles.Administrator)]
 public record AddCoveredZoneCommand : IRequest
 {
     public int DistributionCenterId { get; set; }
-    public int ZoneId { get; set; }
+    public required IList<int> ZoneIds { get; set; }
 }
-public class AddCoveredZoneCommandHandler:IRequestHandler<AddCoveredZoneCommand>
+public class AddCoveredZoneCommandHandler : IRequestHandler<AddCoveredZoneCommand>
 {
     private readonly IApplicationDbContext _context;
 
@@ -23,6 +24,7 @@ public class AddCoveredZoneCommandHandler:IRequestHandler<AddCoveredZoneCommand>
     public async Task Handle(AddCoveredZoneCommand request, CancellationToken cancellationToken)
     {
         var distributionCenter = await _context.DistributionCenters
+            .AsNoTracking()
             .Include(dc => dc.CoveredZones)
             .FirstOrDefaultAsync(dc => dc.Id == request.DistributionCenterId, cancellationToken);
 
@@ -31,24 +33,27 @@ public class AddCoveredZoneCommandHandler:IRequestHandler<AddCoveredZoneCommand>
             throw new NotFoundException(nameof(DistributionCenter), request.DistributionCenterId.ToString());
         }
 
-        var zone = await _context.Zones.FindAsync(new object[] { request.ZoneId }, cancellationToken);
-        if (zone == null)
+        foreach (var zoneId in request.ZoneIds)
         {
-            throw new NotFoundException(nameof(Zone), request.ZoneId.ToString());
-        }
-        var isAsociatedZone=distributionCenter.CoveredZones.Any(cz => cz.ZoneId == request.ZoneId);
-        if (isAsociatedZone)
-        {
-            throw new ValidationException("Zone is already associated with the Distribution Center");
-        }
+            var zone = await _context.Zones.AnyAsync(z => z.Id == zoneId, cancellationToken);
+            if (!zone)
+            {
+                throw new NotFoundException(nameof(Zone), zoneId.ToString());
+            }
+            var isAsociatedZone = distributionCenter.CoveredZones.Any(cz => cz.ZoneId == zoneId);
+            if (isAsociatedZone)
+            {
+                throw new ValidationException($"Zone {zoneId} is already associated with the Distribution Center");
+            }
 
-        var centerZone = new CenterZone
-        {
-            DistributionCenterId = distributionCenter.Id,
-            ZoneId = zone.Id
-        };
+            var centerZone = new CenterZone
+            {
+                DistributionCenterId = distributionCenter.Id,
+                ZoneId = zoneId
+            };
 
-        distributionCenter.CoveredZones.Add(centerZone);
+            _context.CenterZones.Add(centerZone);
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
     }

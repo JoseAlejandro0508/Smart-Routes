@@ -4,8 +4,8 @@ public class AddCoveredZoneCommandValidator : AbstractValidator<AddCoveredZoneCo
 {
     public AddCoveredZoneCommandValidator()
     {
-        RuleFor(cz => cz.ZoneId)
-            .GreaterThan(0)
+        RuleFor(cz => cz.ZoneIds)
+            .Must(x => !x.Any(z => z <= 0))
             .NotEmpty();
         RuleFor(cz => cz.DistributionCenterId)
             .GreaterThan(0)
