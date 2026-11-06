@@ -13,7 +13,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class OperationsSupervisorManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/admin/operations-supervisor-management";
+    public static string RoutePrefix => "/admin/operations-supervisor";
     public static void Map(RouteGroupBuilder groupBuilder)
     {
 

@@ -14,7 +14,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class LogisticsCoordinatorManagement : IEndpointGroup
 {
-    public static  string RoutePrefix => "/admin/logistics-coordinator-management";
+    public static  string RoutePrefix => "/admin/logistics-coordinator";
     public static void Map(RouteGroupBuilder groupBuilder)
     {
         
