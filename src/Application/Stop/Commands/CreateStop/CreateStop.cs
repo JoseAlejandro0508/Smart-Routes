@@ -5,7 +5,7 @@ using Smart_Routes.Domain.Entities;
 
 namespace Smart_Routes.Application.Stops.Commands.CreateStop;
 
-[Authorize(Roles = Roles.Administrator)]
+[Authorize(Roles = Roles.LogisticsCoordinator)]
 public record CreateStopCommand : IRequest
 {
     public required string Address { get; init; }

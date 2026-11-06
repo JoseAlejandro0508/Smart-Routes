@@ -13,7 +13,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class DeliveryPersonManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/admin/delivery-person-management";
+    public static string RoutePrefix => "/admin/delivery-person";
     public static void Map(RouteGroupBuilder groupBuilder)
     {
 
