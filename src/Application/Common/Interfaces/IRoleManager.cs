@@ -7,5 +7,6 @@ public interface IRoleManager
     public Task<List<string>> RemoveUserRoleAsync(string userId, string role);
     public Task<List<string>> GetUserRoleAsync(string userId);
     public Task<List<IUser>> GetAllUsersRolesAsync();
+    public Task<bool> UserExistsAsync(string userId);
 
 }
