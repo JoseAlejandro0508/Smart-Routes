@@ -31,8 +31,8 @@ public class CreateOrderCommandHandlerTests
         var command = CreateValidCommand();
         _repository.Setup(repository => repository.IsCoordinatorAuthorizedForCenterAsync("coordinator-1", 7, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        _repository.Setup(repository => repository.GetStopZoneIdAsync(12, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(4);
+        _repository.Setup(repository => repository.GetStopByIdAsync(12, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Stop { Id = 12, ZoneId = 4, Address = "Package stop" });
         _repository.Setup(repository => repository.DoesCenterCoverZoneAsync(7, 4, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         _repository.Setup(repository => repository.ExistsAsync(
@@ -71,8 +71,8 @@ public class CreateOrderCommandHandlerTests
         var command = CreateValidCommand();
         _repository.Setup(repository => repository.IsCoordinatorAuthorizedForCenterAsync("coordinator-1", 7, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        _repository.Setup(repository => repository.GetStopZoneIdAsync(12, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(4);
+        _repository.Setup(repository => repository.GetStopByIdAsync(12, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Stop { Id = 12, ZoneId = 4, Address = "Package stop" });
         _repository.Setup(repository => repository.DoesCenterCoverZoneAsync(7, 4, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         _repository.Setup(repository => repository.ExistsAsync(
@@ -83,6 +83,61 @@ public class CreateOrderCommandHandlerTests
             _handler.Handle(command, CancellationToken.None));
 
         _repository.Verify(repository => repository.Add(It.IsAny<Order>()), Times.Never);
+    }
+
+    [Test]
+    public async Task HandleReusesStopFromAddressAndZone()
+    {
+        var command = CreateValidCommand() with
+        {
+            StopId = null,
+            Stop = new CreateOrderStop(" Package stop ", 4)
+        };
+        _repository.Setup(repository => repository.IsCoordinatorAuthorizedForCenterAsync("coordinator-1", 7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _repository.Setup(repository => repository.DoesCenterCoverZoneAsync(7, 4, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _repository.Setup(repository => repository.GetStopByAddressAndZoneAsync("Package stop", 4, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Stop { Id = 12, ZoneId = 4, Address = "Package stop" });
+        _repository.Setup(repository => repository.ExistsAsync(
+                7, 12, DeliveryType.Parcel, "Package 42", new DateOnly(2026, 10, 27), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _repository.Setup(repository => repository.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _repository.Verify(repository => repository.Add(It.Is<Order>(order =>
+            order.StopId == 12
+                && order.Stop.Address == "Package stop"
+                && order.Stop.ZoneId == 4)), Times.Once);
+    }
+
+    [Test]
+    public async Task HandleCreatesStopWhenAddressAndZoneAreNew()
+    {
+        var command = CreateValidCommand() with
+        {
+            StopId = null,
+            Stop = new CreateOrderStop("12 Main Street", 4)
+        };
+        _repository.Setup(repository => repository.IsCoordinatorAuthorizedForCenterAsync("coordinator-1", 7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _repository.Setup(repository => repository.DoesCenterCoverZoneAsync(7, 4, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _repository.Setup(repository => repository.GetStopByAddressAndZoneAsync("12 Main Street", 4, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Stop?)null);
+        _repository.Setup(repository => repository.ExistsAsync(
+                7, 0, DeliveryType.Parcel, "Package 42", new DateOnly(2026, 10, 27), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _repository.Setup(repository => repository.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _repository.Verify(repository => repository.Add(It.Is<Order>(order =>
+            order.Stop.Address == "12 Main Street"
+                && order.Stop.ZoneId == 4)), Times.Once);
     }
 
     private static CreateOrderCommand CreateValidCommand()

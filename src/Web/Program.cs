@@ -28,6 +28,7 @@ app.UseHttpsRedirection();
 app.UseCors(static builder => 
     builder.AllowAnyMethod()
         .AllowAnyHeader()
+        .WithExposedHeaders("X-Total-Count", "X-Page-Number", "X-Page-Size")
         .AllowAnyOrigin());
 
 app.UseFileServer();

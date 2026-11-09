@@ -33,9 +33,15 @@ public record CreateOrderCommand : IRequest<int>
     /// <summary>Distribution center where the order is registered.</summary>
     public int DistributionCenterId { get; init; }
 
-    /// <summary>Destination stop for the delivery.</summary>
-    public int StopId { get; init; }
+    /// <summary>Destination stop when it already exists.</summary>
+    public int? StopId { get; init; }
+
+    /// <summary>Destination stop to find or register using its address and zone.</summary>
+    public CreateOrderStop? Stop { get; init; }
 }
+
+/// <summary>Destination details submitted by the orders client.</summary>
+public sealed record CreateOrderStop(string Address, int ZoneId);
 
 /// <summary>Validates authorization and business relationships, then persists a new order.</summary>
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int>
@@ -64,30 +70,44 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
             throw new ForbiddenAccessException();
         }
 
-        var stopZoneId = await _orderRepository.GetStopZoneIdAsync(request.StopId, cancellationToken);
+        var stop = request.StopId.HasValue
+            ? await _orderRepository.GetStopByIdAsync(request.StopId.Value, cancellationToken)
+            : null;
 
-        if (stopZoneId is null)
+        if (request.StopId.HasValue && stop is null)
         {
-            throw new NotFoundException(request.StopId.ToString(), nameof(Stop));
+            throw new NotFoundException(request.StopId.Value.ToString(), nameof(Stop));
         }
 
+        var normalizedAddress = request.Stop?.Address.Trim();
+        var stopZoneId = stop?.ZoneId ?? request.Stop!.ZoneId;
         var centerCoversStop = await _orderRepository.DoesCenterCoverZoneAsync(
             request.DistributionCenterId,
-            stopZoneId.Value,
+            stopZoneId,
             cancellationToken);
 
         if (!centerCoversStop)
         {
             throw new Smart_Routes.Application.Common.Exceptions.ValidationException(
             [new FluentValidation.Results.ValidationFailure(
-                nameof(request.StopId),
+                request.StopId.HasValue ? nameof(request.StopId) : nameof(request.Stop),
                 "The selected stop is outside the distribution center's coverage.")]);
         }
+
+        stop ??= await _orderRepository.GetStopByAddressAndZoneAsync(
+            normalizedAddress!,
+            stopZoneId,
+            cancellationToken);
+        stop ??= new Stop
+        {
+            Address = normalizedAddress!,
+            ZoneId = stopZoneId
+        };
 
         var description = request.Description.Trim();
         var duplicateExists = await _orderRepository.ExistsAsync(
             request.DistributionCenterId,
-            request.StopId,
+            stop.Id,
             request.DeliveryType,
             description,
             request.EntryDate,
@@ -107,7 +127,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
             request.DeadlineAt,
             coordinatorId,
             request.DistributionCenterId,
-            request.StopId);
+            stop.Id);
+        order.Stop = stop;
 
         _orderRepository.Add(order);
         try
@@ -116,13 +137,17 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
         }
         catch (DbUpdateException)
         {
-            var duplicateCreatedConcurrently = await _orderRepository.ExistsAsync(
-                request.DistributionCenterId,
-                request.StopId,
-                request.DeliveryType,
-                description,
-                request.EntryDate,
-                cancellationToken);
+            var duplicateStop = stop.Id == 0
+                ? await _orderRepository.GetStopByAddressAndZoneAsync(normalizedAddress!, stopZoneId, cancellationToken)
+                : stop;
+            var duplicateCreatedConcurrently = duplicateStop is not null
+                && await _orderRepository.ExistsAsync(
+                    request.DistributionCenterId,
+                    duplicateStop.Id,
+                    request.DeliveryType,
+                    description,
+                    request.EntryDate,
+                    cancellationToken);
 
             if (duplicateCreatedConcurrently)
             {

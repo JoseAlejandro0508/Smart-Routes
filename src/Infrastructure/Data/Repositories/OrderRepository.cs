@@ -26,12 +26,18 @@ public sealed class OrderRepository : IOrderRepository
             cancellationToken);
     }
 
-    public Task<int?> GetStopZoneIdAsync(int stopId, CancellationToken cancellationToken)
+    public Task<Stop?> GetStopByIdAsync(int stopId, CancellationToken cancellationToken)
+    {
+        return _context.Stops.SingleOrDefaultAsync(stop => stop.Id == stopId, cancellationToken);
+    }
+
+    public Task<Stop?> GetStopByAddressAndZoneAsync(string address, int zoneId, CancellationToken cancellationToken)
     {
         return _context.Stops
-            .Where(stop => stop.Id == stopId)
-            .Select(stop => (int?)stop.ZoneId)
-            .SingleOrDefaultAsync(cancellationToken);
+            .OrderBy(stop => stop.Id)
+            .FirstOrDefaultAsync(
+                stop => stop.Address == address && stop.ZoneId == zoneId,
+                cancellationToken);
     }
 
     public Task<bool> DoesCenterCoverZoneAsync(int centerId, int zoneId, CancellationToken cancellationToken)
@@ -65,7 +71,67 @@ public sealed class OrderRepository : IOrderRepository
 
     public Task<Order?> GetByIdAsync(int orderId, CancellationToken cancellationToken)
     {
-        return _context.Orders.SingleOrDefaultAsync(order => order.Id == orderId, cancellationToken);
+        return _context.Orders
+            .Include(order => order.DistributionCenter)
+            .Include(order => order.Stop)
+                .ThenInclude(stop => stop.Zone)
+            .SingleOrDefaultAsync(order => order.Id == orderId, cancellationToken);
+    }
+
+    public async Task<(IReadOnlyList<Order> Orders, int TotalCount)> GetForCoordinatorAsync(
+        string coordinatorId,
+        int? centerId,
+        int? zoneId,
+        DeliveryType? deliveryType,
+        OrderPriority? priority,
+        OrderStatus? status,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = _context.Orders
+            .AsNoTracking()
+            .Where(order => _context.CoordinatorCenters.Any(assignment =>
+                assignment.CoordinatorId == coordinatorId
+                    && assignment.DistributionCenterId == order.DistributionCenterId));
+
+        if (centerId.HasValue)
+        {
+            query = query.Where(order => order.DistributionCenterId == centerId.Value);
+        }
+
+        if (zoneId.HasValue)
+        {
+            query = query.Where(order => order.Stop.ZoneId == zoneId.Value);
+        }
+
+        if (deliveryType.HasValue)
+        {
+            query = query.Where(order => order.DeliveryType == deliveryType.Value);
+        }
+
+        if (priority.HasValue)
+        {
+            query = query.Where(order => order.Priority == priority.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(order => order.Status == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var offset = (int)Math.Min((long)(pageNumber - 1) * pageSize, int.MaxValue);
+        var orders = await query
+            .Include(order => order.DistributionCenter)
+            .Include(order => order.Stop)
+                .ThenInclude(stop => stop.Zone)
+            .OrderBy(order => order.Id)
+            .Skip(offset)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (orders, totalCount);
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken)

@@ -15,14 +15,17 @@ public record GetOrderByIdQuery(int Id) : IRequest<OrderResponse>;
 public sealed record OrderResponse(
     int Id,
     string Description,
-    DeliveryType DeliveryType,
-    OrderPriority Priority,
+    string DeliveryType,
+    string Priority,
     decimal WeightKg,
     DateOnly EntryDate,
     DateTimeOffset DeadlineAt,
-    OrderStatus Status,
+    string Status,
     int DistributionCenterId,
-    int StopId);
+    int StopId,
+    string CenterName,
+    string ZoneName,
+    string Address);
 
 /// <summary>Loads an order and verifies that the current coordinator can access its center.</summary>
 public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, OrderResponse>
@@ -59,13 +62,16 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
         return new OrderResponse(
             order.Id,
             order.Description,
-            order.DeliveryType,
-            order.Priority,
+            order.DeliveryType.ToString(),
+            order.Priority.ToString(),
             order.WeightKg,
             order.EntryDate,
             order.DeadlineAt,
-            order.Status,
+            order.Status.ToString(),
             order.DistributionCenterId,
-            order.StopId);
+            order.StopId,
+            order.DistributionCenter.Name,
+            order.Stop.Zone.Name,
+            order.Stop.Address);
     }
 }

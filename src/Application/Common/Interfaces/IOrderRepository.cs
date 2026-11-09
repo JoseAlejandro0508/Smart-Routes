@@ -8,8 +8,11 @@ public interface IOrderRepository
     /// <summary>Checks whether a coordinator is assigned to the specified center.</summary>
     Task<bool> IsCoordinatorAuthorizedForCenterAsync(string coordinatorId, int centerId, CancellationToken cancellationToken);
 
-    /// <summary>Returns the zone for a stop, or null when the stop does not exist.</summary>
-    Task<int?> GetStopZoneIdAsync(int stopId, CancellationToken cancellationToken);
+    /// <summary>Finds a stop by its identifier.</summary>
+    Task<Stop?> GetStopByIdAsync(int stopId, CancellationToken cancellationToken);
+
+    /// <summary>Finds a stop by its normalized address and zone.</summary>
+    Task<Stop?> GetStopByAddressAndZoneAsync(string address, int zoneId, CancellationToken cancellationToken);
 
     /// <summary>Checks whether a center covers the specified zone.</summary>
     Task<bool> DoesCenterCoverZoneAsync(int centerId, int zoneId, CancellationToken cancellationToken);
@@ -22,6 +25,18 @@ public interface IOrderRepository
 
     /// <summary>Finds an order by its identifier.</summary>
     Task<Order?> GetByIdAsync(int orderId, CancellationToken cancellationToken);
+
+    /// <summary>Returns a page of orders visible to a coordinator and the total matching count.</summary>
+    Task<(IReadOnlyList<Order> Orders, int TotalCount)> GetForCoordinatorAsync(
+        string coordinatorId,
+        int? centerId,
+        int? zoneId,
+        Domain.Enums.DeliveryType? deliveryType,
+        Domain.Enums.OrderPriority? priority,
+        Domain.Enums.OrderStatus? status,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken);
 
     /// <summary>Persists pending changes and returns the number of affected records.</summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);

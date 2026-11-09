@@ -31,7 +31,22 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
         RuleFor(command => command.DistributionCenterId)
             .GreaterThan(0);
 
+        RuleFor(command => command)
+            .Must(command => command.StopId.HasValue != (command.Stop is not null))
+            .WithMessage("Provide either an existing StopId or stop details.");
+
         RuleFor(command => command.StopId)
-            .GreaterThan(0);
+            .GreaterThan(0)
+            .When(command => command.StopId.HasValue);
+
+        When(command => command.Stop is not null, () =>
+        {
+            RuleFor(command => command.Stop!.Address)
+                .NotEmpty()
+                .MaximumLength(300);
+
+            RuleFor(command => command.Stop!.ZoneId)
+                .GreaterThan(0);
+        });
     }
 }

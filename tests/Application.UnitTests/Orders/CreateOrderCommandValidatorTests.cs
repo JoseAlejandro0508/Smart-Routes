@@ -28,6 +28,24 @@ public class CreateOrderCommandValidatorTests
     }
 
     [Test]
+    public void ValidOrderWithAddressAndZonePassesValidation()
+    {
+        var result = _validator.Validate(new CreateOrderCommand
+        {
+            Description = "Package 42",
+            DeliveryType = DeliveryType.Parcel,
+            Priority = OrderPriority.Medium,
+            WeightKg = 2.5m,
+            EntryDate = new DateOnly(2026, 10, 27),
+            DeadlineAt = new DateTimeOffset(2026, 10, 28, 12, 0, 0, TimeSpan.Zero),
+            DistributionCenterId = 1,
+            Stop = new CreateOrderStop("12 Main Street", 2)
+        });
+
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Test]
     public void NonPositiveWeightFailsValidation()
     {
         var result = _validator.Validate(new CreateOrderCommand
@@ -63,5 +81,22 @@ public class CreateOrderCommandValidatorTests
 
         result.IsValid.ShouldBeFalse();
         result.Errors.ShouldContain(error => error.PropertyName == nameof(CreateOrderCommand.DeadlineAt));
+    }
+
+    [Test]
+    public void MissingDestinationFailsValidation()
+    {
+        var result = _validator.Validate(new CreateOrderCommand
+        {
+            Description = "Package 42",
+            DeliveryType = DeliveryType.Parcel,
+            Priority = OrderPriority.Medium,
+            WeightKg = 2.5m,
+            EntryDate = new DateOnly(2026, 10, 27),
+            DeadlineAt = new DateTimeOffset(2026, 10, 28, 12, 0, 0, TimeSpan.Zero),
+            DistributionCenterId = 1
+        });
+
+        result.IsValid.ShouldBeFalse();
     }
 }
