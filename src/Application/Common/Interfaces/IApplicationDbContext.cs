@@ -44,7 +44,7 @@ public interface IApplicationDbContext
 
     DbSet<Review> Reviews { get; }
 
-    DbSet<ReviewParameter> ReviewParameters { get; }
+
 
     DbSet<DeliveryRecord> DeliveryRecords { get; }
 

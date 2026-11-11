@@ -9,10 +9,9 @@ public class RouteParameter
 
     public Route Route { get; set; } = null!;
 
-    public int BalanceParameterId { get; set; }
+    public int BalanceCriterionId { get; set; }
 
-    public BalanceParameter BalanceParameter { get; set; } = null!;
+    public BalanceCriterion BalanceCriterion { get; set; } = null!;
 
-    /// <summary>valor_aplicado: value frozen when the route was generated; in [0, 1] for a delivery type proportion.</summary>
-    public decimal AppliedValue { get; set; }
+
 }

@@ -18,8 +18,15 @@ public class MyRoleManager : IRoleManager
     {
         _roleManager = roleManager;
         _userManager = userManager;
+
     }
 
+    public async Task<bool> UserExistsAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        return user != null;
+    }
     public async Task<List<string>> AddUserRoleAsync(string userId, string role)
     {
         var user = await _userManager.FindByIdAsync(userId);

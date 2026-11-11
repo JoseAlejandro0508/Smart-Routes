@@ -10,8 +10,7 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
 {
     public void Configure(EntityTypeBuilder<Route> builder)
     {
-        builder.Property(r => r.VehicleCapacityKg)
-            .HasPrecision(10, 2);
+
 
         builder.Property(r => r.GeneratorCoordinatorId)
             .HasMaxLength(450);
@@ -28,7 +27,10 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
             .WithMany(c => c.Routes)
             .HasForeignKey(r => r.DistributionCenterId)
             .OnDelete(DeleteBehavior.Restrict);
-
+        builder.HasOne(r => r.BalanceCriterion)
+            .WithMany(c => c.Routes)
+            .HasForeignKey(r => r.BalanceCriterionId)
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(r => r.DeliveryPerson)
             .WithMany(d => d.Routes)
             .HasForeignKey(r => r.DeliveryPersonId)
@@ -45,7 +47,7 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
 
         builder.ToTable(t =>
         {
-            t.HasCheckConstraint("CK_Routes_VehicleCapacityKg", "[VehicleCapacityKg] > 0");
+
             t.HasCheckConstraint("CK_Routes_ScheduledDate", "[ScheduledDate] >= CAST([CreationDate] AS date)");
         });
     }
@@ -96,27 +98,6 @@ public class RouteStopConfiguration : IEntityTypeConfiguration<RouteStop>
     }
 }
 
-/// <summary>RUTA_PARAMETRO.</summary>
-public class RouteParameterConfiguration : IEntityTypeConfiguration<RouteParameter>
-{
-    public void Configure(EntityTypeBuilder<RouteParameter> builder)
-    {
-        builder.HasKey(rp => new { rp.RouteId, rp.BalanceParameterId });
-
-        builder.Property(rp => rp.AppliedValue)
-            .HasPrecision(18, 4);
-
-        builder.HasOne(rp => rp.Route)
-            .WithMany(r => r.RouteParameters)
-            .HasForeignKey(rp => rp.RouteId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(rp => rp.BalanceParameter)
-            .WithMany(p => p.RouteParameters)
-            .HasForeignKey(rp => rp.BalanceParameterId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
 
 /// <summary>REVISION.</summary>
 public class ReviewConfiguration : IEntityTypeConfiguration<Review>
@@ -138,10 +119,12 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
             .WithMany(rt => rt.Reviews)
             .HasForeignKey(r => r.RouteId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasOne(r => r.BalanceCriterion)
+            .WithMany(bc => bc.Reviews)
+            .HasForeignKey(r => r.BalanceCriterioId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // Reviews of the same route have distinct dates, so the latest one is well defined (3.3).
-        builder.HasIndex(r => new { r.RouteId, r.ReviewedAt })
-            .IsUnique();
 
         builder.ToTable(t => t.HasCheckConstraint(
             "CK_Reviews_Observations",
@@ -150,11 +133,12 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 }
 
 /// <summary>REVISION_PARAMETRO.</summary>
+/*
 public class ReviewParameterConfiguration : IEntityTypeConfiguration<ReviewParameter>
 {
     public void Configure(EntityTypeBuilder<ReviewParameter> builder)
     {
-        builder.HasKey(rp => new { rp.ReviewId, rp.BalanceParameterId });
+
 
         builder.Property(rp => rp.IndicatedValue)
             .HasPrecision(18, 4);
@@ -170,7 +154,7 @@ public class ReviewParameterConfiguration : IEntityTypeConfiguration<ReviewParam
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
-
+*/
 /// <summary>CRITERIO_EQUILIBRIO.</summary>
 public class BalanceCriterionConfiguration : IEntityTypeConfiguration<BalanceCriterion>
 {

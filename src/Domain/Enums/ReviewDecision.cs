@@ -6,5 +6,6 @@ namespace Smart_Routes.Domain.Enums;
 public enum ReviewDecision
 {
     Approved = 0,
-    Rejected = 1
+    Rejected = 1,
+    Pending=2,
 }

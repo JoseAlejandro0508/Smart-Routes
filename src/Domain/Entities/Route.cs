@@ -9,14 +9,11 @@ namespace Smart_Routes.Domain.Entities;
 /// </remarks>
 public class Route : BaseAuditableEntity
 {
-    /// <summary>Creation date (fecha_creacion).</summary>
-    public DateTimeOffset CreationDate { get; set; }
+
 
     /// <summary>Scheduled delivery day (fecha_programada), not earlier than the creation date.</summary>
-    public DateOnly ScheduledDate { get; set; }
+    public DateTimeOffset ScheduledDate { get; set; }
 
-    /// <summary>Vehicle capacity in kg (capacidad_vehiculo_kg), greater than zero.</summary>
-    public decimal VehicleCapacityKg { get; set; }
 
     /// <summary>GENERA: coordinator who generated the route (id_coord_generador).</summary>
     public string GeneratorCoordinatorId { get; set; } = string.Empty;
@@ -45,7 +42,9 @@ public class Route : BaseAuditableEntity
     public IList<RouteStop> RouteStops { get; private set; } = new List<RouteStop>();
 
     /// <summary>APLICA_PARAMETRO: parameter values applied when generating the route (frozen configuration).</summary>
-    public IList<RouteParameter> RouteParameters { get; private set; } = new List<RouteParameter>();
+    public int BalanceCriterionId { get; set; }
+    public BalanceCriterion BalanceCriterion { get; set; }=null!;
+
 
     /// <summary>EVALUA: review history of the route.</summary>
     public IList<Review> Reviews { get; private set; } = new List<Review>();
