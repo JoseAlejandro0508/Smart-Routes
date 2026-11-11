@@ -18,13 +18,15 @@ public class BalanceParameter : BaseAuditableEntity
     /// <summary>Target delivery type (tipo_entrega_objetivo); required only when the metric is a delivery type proportion.</summary>
     public DeliveryType? TargetDeliveryType { get; set; }
 
+    /// <summary>valor_aplicado: value frozen when the route was generated; in [0, 1] for a delivery type proportion.</summary>
+    public decimal AppliedValue { get; set; }
+
     /// <summary>PERTENECE_A: criterion the parameter belongs to.</summary>
     public int BalanceCriterionId { get; set; }
 
     public BalanceCriterion BalanceCriterion { get; set; } = null!;
 
-    /// <summary>APLICA_PARAMETRO: values applied to routes.</summary>
-    public IList<RouteParameter> RouteParameters { get; private set; } = new List<RouteParameter>();
+
 
     /// <summary>INDICA_PARAMETRO: values indicated by supervisors in reviews.</summary>
     public IList<ReviewParameter> ReviewParameters { get; private set; } = new List<ReviewParameter>();

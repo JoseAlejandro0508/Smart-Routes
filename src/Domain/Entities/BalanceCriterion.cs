@@ -21,4 +21,9 @@ public class BalanceCriterion : BaseAuditableEntity
 
     /// <summary>PERTENECE_A: parameters that make up the criterion.</summary>
     public IList<BalanceParameter> Parameters { get; private set; } = new List<BalanceParameter>();
+
+    /// <summary>APLICA_RUTA: routes that use this criterion.</summary>
+    public IList<Route> Routes { get; private set; } = new List<Route>();
+
+    public IList<Review> Reviews { get; private set; } = new List<Review>();
 }
