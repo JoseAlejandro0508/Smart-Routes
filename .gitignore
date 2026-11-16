@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# Personal learning guide (keep out of project commits)
+/docs/GUIA_DESDE_CERO.md
+
 # User-specific files
 *.rsuser
 *.suo
