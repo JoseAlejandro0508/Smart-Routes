@@ -39,7 +39,7 @@ public class CreateDeliveryPersonCommandHandler : IRequestHandler<CreateDelivery
 
         var entity = new DeliveryPerson
         {
-            UserId = request.UserId,
+            Id = request.UserId,
 
             DateOfBirth = request.BirthDay,
             Fleet = request.Fleet

@@ -150,9 +150,14 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
             .OnDelete(DeleteBehavior.Restrict);
 
 
-        builder.ToTable(t => t.HasCheckConstraint(
-            "CK_Reviews_Observations",
-            $"[Decision] <> {(int)ReviewDecision.Rejected} OR [Observations] IS NOT NULL"));
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint(
+                "CK_Reviews_Observations",
+                $"[Decision] <> {(int)ReviewDecision.Rejected} OR [Observations] IS NOT NULL");
+            t.HasCheckConstraint(
+                "CK_Reviews_Decision", DomainCheckConstraints.InEnum<ReviewDecision>("Decision"));
+        });
     }
 }
 
@@ -254,9 +259,25 @@ public class BalanceParameterConfiguration : IEntityTypeConfiguration<BalancePar
         var proportion = (int)BalanceMetric.DeliveryTypeProportion;
 
         // tipo_entrega_objetivo is not null if and only if metrica = PROPORCION_TIPO (3.2).
-        builder.ToTable(t => t.HasCheckConstraint(
-            "CK_BalanceParameters_TargetDeliveryType",
-            $"([Metric] = {proportion} AND [TargetDeliveryType] IS NOT NULL) OR " +
-            $"([Metric] <> {proportion} AND [TargetDeliveryType] IS NULL)"));
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint(
+                "CK_BalanceParameters_TargetDeliveryType",
+                $"([Metric] = {proportion} AND [TargetDeliveryType] IS NOT NULL) OR " +
+                $"([Metric] <> {proportion} AND [TargetDeliveryType] IS NULL)");
+            t.HasCheckConstraint(
+                "CK_BalanceParameters_Metric", DomainCheckConstraints.InEnum<BalanceMetric>("Metric"));
+            t.HasCheckConstraint(
+                "CK_BalanceParameters_Operator", DomainCheckConstraints.InEnum<ComparisonOperator>("Operator"));
+            t.HasCheckConstraint(
+                "CK_BalanceParameters_TargetDeliveryTypeDomain",
+                DomainCheckConstraints.InEnum<DeliveryType>("TargetDeliveryType", nullable: true));
+
+            // valor_aplicado in [0, 1] when the metric is a proportion (3.2). Since PR #53 the value lives
+            // in this table, so the rule no longer needs a trigger.
+            t.HasCheckConstraint(
+                "CK_BalanceParameters_ProportionRange",
+                $"[Metric] <> {proportion} OR ([AppliedValue] >= 0 AND [AppliedValue] <= 1)");
+        });
     }
 }

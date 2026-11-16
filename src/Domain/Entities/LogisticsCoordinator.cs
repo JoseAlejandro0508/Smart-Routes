@@ -7,7 +7,6 @@ namespace Smart_Routes.Domain.Entities;
 public class LogisticsCoordinator : BaseUserProfile
 {
 
-    public required string UserId { get; set;} 
     /// <summary>Specialty (especialidad).</summary>
     public required string Specialty { get; set; }
 

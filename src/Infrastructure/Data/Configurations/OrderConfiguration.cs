@@ -18,6 +18,8 @@ public class StopConfiguration : IEntityTypeConfiguration<Stop>
             .WithMany(z => z.Stops)
             .HasForeignKey(s => s.ZoneId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.ToTable(t => t.HasCheckConstraint("CK_Stops_Coordinates", DomainCheckConstraints.Coordinates("X", "Y")));
     }
 }
 
@@ -59,6 +61,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         {
             t.HasCheckConstraint("CK_Orders_WeightKg", "[WeightKg] > 0");
             t.HasCheckConstraint("CK_Orders_DeadlineAt", "CAST([DeadlineAt] AS date) >= [EntryDate]");
+            t.HasCheckConstraint("CK_Orders_DeliveryType", DomainCheckConstraints.InEnum<DeliveryType>("DeliveryType"));
+            t.HasCheckConstraint("CK_Orders_Priority", DomainCheckConstraints.InEnum<OrderPriority>("Priority"));
+            t.HasCheckConstraint("CK_Orders_Status", DomainCheckConstraints.InEnum<OrderStatus>("Status"));
         });
     }
 }
@@ -77,6 +82,9 @@ public class DeliveryRecordConfiguration : IEntityTypeConfiguration<DeliveryReco
             .WithOne(ro => ro.DeliveryRecord)
             .HasForeignKey<DeliveryRecord>(d => new { d.RouteId, d.OrderId })
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.ToTable(t => t.HasCheckConstraint(
+            "CK_DeliveryRecords_Result", DomainCheckConstraints.InEnum<DeliveryResult>("Result")));
     }
 }
 
@@ -114,6 +122,10 @@ public class ReschedulingConfiguration : IEntityTypeConfiguration<Rescheduling>
             t.HasCheckConstraint(
                 "CK_Reschedulings_ResolutionDate",
                 "[ResolutionDate] IS NULL OR [ResolutionDate] > [RequestDate]");
+            t.HasCheckConstraint(
+                "CK_Reschedulings_Status", DomainCheckConstraints.InEnum<ReschedulingStatus>("Status"));
+            t.HasCheckConstraint(
+                "CK_Reschedulings_ManualResult", DomainCheckConstraints.InEnum<ManualResolution>("ManualResult", nullable: true));
         });
     }
 }

@@ -16,6 +16,8 @@ public class DistributionCenterConfiguration : IEntityTypeConfiguration<Distribu
         builder.Property(c => c.LogisticsProgram)
             .HasMaxLength(200)
             .IsRequired();
+
+        builder.ToTable(t => t.HasCheckConstraint("CK_DistributionCenters_Coordinates", DomainCheckConstraints.Coordinates("X", "Y")));
     }
 }
 
