@@ -133,13 +133,13 @@ public class GetRouteByFilterHandler : IRequestHandler<GetRouteByFilter, IList<R
                     .Select(rs => rs.Stop)
                     .ToList();
 
-                var orderedOrders = new List<Order>();
+                var orderedOrders = new List<RouteOrderDto>();
 
                 foreach (var stop in orderedStops)
                 {
                     var ordersForStop = route.RouteOrders
                         .Where(ro => ro.Order.StopId == stop.Id)
-                        .Select(ro => ro.Order)
+                        .Select(ro => RouteOrderDto.From(ro.Order))
                         .ToList();
 
                     orderedOrders.AddRange(ordersForStop);

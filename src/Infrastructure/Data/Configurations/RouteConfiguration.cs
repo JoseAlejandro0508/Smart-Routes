@@ -48,8 +48,32 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
         builder.ToTable(t =>
         {
 
-            t.HasCheckConstraint("CK_Routes_ScheduledDate", "[ScheduledDate] >= CAST([CreationDate] AS date)");
+            // CreationDate was replaced by the audit column Created, so the check compares with it (3.3).
+            t.HasCheckConstraint("CK_Routes_ScheduledDate", "CAST([ScheduledDate] AS date) >= CAST([Created] AS date)");
         });
+    }
+}
+
+/// <summary>RUTA_PARAMETRO: criterion applied to a route.</summary>
+/// <remarks>
+/// Its configuration was removed when the applied values moved to <see cref="BalanceParameter"/>, but the table
+/// is still in the model, and without a key EF Core cannot build it. The composite key keeps it valid.
+/// </remarks>
+public class RouteParameterConfiguration : IEntityTypeConfiguration<RouteParameter>
+{
+    public void Configure(EntityTypeBuilder<RouteParameter> builder)
+    {
+        builder.HasKey(rp => new { rp.RouteId, rp.BalanceCriterionId });
+
+        builder.HasOne(rp => rp.Route)
+            .WithMany()
+            .HasForeignKey(rp => rp.RouteId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(rp => rp.BalanceCriterion)
+            .WithMany()
+            .HasForeignKey(rp => rp.BalanceCriterionId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -155,6 +179,34 @@ public class ReviewParameterConfiguration : IEntityTypeConfiguration<ReviewParam
     }
 }
 */
+
+/// <summary>REVISION_PARAMETRO.</summary>
+/// <remarks>
+/// The previous configuration is commented out because <see cref="Review"/> no longer lists its parameters
+/// (re-confection now points to a whole <see cref="BalanceCriterion"/>). The entity is still in the model
+/// through <see cref="BalanceParameter.ReviewParameters"/>, so it needs a key for EF Core to build the model.
+/// </remarks>
+public class ReviewParameterKeyConfiguration : IEntityTypeConfiguration<ReviewParameter>
+{
+    public void Configure(EntityTypeBuilder<ReviewParameter> builder)
+    {
+        builder.HasKey(rp => new { rp.ReviewId, rp.BalanceParameterId });
+
+        builder.Property(rp => rp.IndicatedValue)
+            .HasPrecision(18, 4);
+
+        builder.HasOne(rp => rp.Review)
+            .WithMany()
+            .HasForeignKey(rp => rp.ReviewId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(rp => rp.BalanceParameter)
+            .WithMany(p => p.ReviewParameters)
+            .HasForeignKey(rp => rp.BalanceParameterId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 /// <summary>CRITERIO_EQUILIBRIO.</summary>
 public class BalanceCriterionConfiguration : IEntityTypeConfiguration<BalanceCriterion>
 {
@@ -189,6 +241,10 @@ public class BalanceParameterConfiguration : IEntityTypeConfiguration<BalancePar
         builder.Property(p => p.Name)
             .HasMaxLength(200)
             .IsRequired();
+
+        // Proportions such as 0.3333 need four decimals.
+        builder.Property(p => p.AppliedValue)
+            .HasPrecision(18, 4);
 
         builder.HasOne(p => p.BalanceCriterion)
             .WithMany(c => c.Parameters)

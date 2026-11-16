@@ -1,11 +1,12 @@
 using Smart_Routes.Application.Common.Interfaces;
+using Smart_Routes.Application.Common.Models;
 using Smart_Routes.Application.Common.Security;
 using Smart_Routes.Domain.Constants;
 using Smart_Routes.Domain.Entities;
 
 namespace Smart_Routes.Application.Routes.Commands.Generate;
 [Authorize(Roles = $"{Roles.LogisticsCoordinator}")]
-public record GenerateCommand:IRequest<List<Order>>
+public record GenerateCommand:IRequest<GeneratedRouteDto>
 {
     public required DateTimeOffset ScheduledDate { get; init; }
 
@@ -13,7 +14,7 @@ public record GenerateCommand:IRequest<List<Order>>
     public required int DistributionCenterId { get; init; }
     public required int BalanceCriterionId { get; init; }
 }
-public class GenerateCommandHandler:IRequestHandler<GenerateCommand,List<Order>>
+public class GenerateCommandHandler:IRequestHandler<GenerateCommand,GeneratedRouteDto>
 {
 
     private readonly IApplicationDbContext _context;
@@ -27,7 +28,7 @@ public class GenerateCommandHandler:IRequestHandler<GenerateCommand,List<Order>>
         _currentUser = currentUser;
     }
 
-    public async Task<List<Order>> Handle(GenerateCommand request, CancellationToken cancellationToken)
+    public async Task<GeneratedRouteDto> Handle(GenerateCommand request, CancellationToken cancellationToken)
     {
         var route = new Route
         {
@@ -47,13 +48,13 @@ public class GenerateCommandHandler:IRequestHandler<GenerateCommand,List<Order>>
             .FirstOrDefaultAsync(r=>r.Id==route.Id,cancellationToken);
         
         var Stops=UpdatedRoute!.RouteStops.OrderBy(r=>r.VisitOrder).Select(rs=>rs.Stop).ToList();
-        var OrdersOrdered=new List<Order>();
+        var OrdersOrdered=new List<RouteOrderDto>();
         foreach (var stp in Stops)
         {
-            var Orders=UpdatedRoute.RouteOrders.Where(ro=>ro.Order.StopId==stp.Id).Select(ro=>ro.Order).ToList();
+            var Orders=UpdatedRoute.RouteOrders.Where(ro=>ro.Order.StopId==stp.Id).Select(ro=>RouteOrderDto.From(ro.Order)).ToList();
             OrdersOrdered.AddRange(Orders);
         }
-        return OrdersOrdered;   
+        return new GeneratedRouteDto(route.Id, OrdersOrdered);   
     }
     
 }

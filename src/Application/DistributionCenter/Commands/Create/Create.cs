@@ -11,6 +11,12 @@ public class CreateCommand : IRequest
     public required string Name { get; init; }
     public required string LogisticProgram { get; init; }
 
+    /// <summary>Optional latitude of the center; routes start and end here when it is known.</summary>
+    public double? Latitude { get; init; }
+
+    /// <summary>Optional longitude of the center; routes start and end here when it is known.</summary>
+    public double? Longitude { get; init; }
+
 }
 public class CreateCommandHandler:IRequestHandler<CreateCommand>
 {
@@ -27,8 +33,10 @@ public class CreateCommandHandler:IRequestHandler<CreateCommand>
         {
             Name = request.Name,
             LogisticsProgram=request.LogisticProgram,
+            X = request.Longitude,
+            Y = request.Latitude,
         };
-        if(_context.DistributionCenters.Any(dc => dc.Name == dc.Name))
+        if(_context.DistributionCenters.Any(dc => dc.Name == request.Name))
         {
             throw new ValidationException("Distribution Center name  already exists");
         }

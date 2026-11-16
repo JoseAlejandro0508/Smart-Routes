@@ -2,6 +2,9 @@
 using Smart_Routes.Application.Common.Behaviours;
 using Smart_Routes.Domain.Factories;
 using Smart_Routes.Domain.Services;
+using Smart_Routes.Domain.Routing;
+using Smart_Routes.Application.Common.Interfaces;
+using Smart_Routes.Application.Routes.Services;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -22,6 +25,8 @@ public static class DependencyInjection
         builder.Services.AddSingleton<IRouteBalanceMetricStrategy, StopCountStrategy>();
         builder.Services.AddSingleton<RouteBalanceMetricCalculator>();
         builder.Services.AddSingleton<RouteBalanceParameterEvaluator>();
+        builder.Services.AddSingleton<RouteOrderSelector>();
+        builder.Services.AddScoped<IRouteGenerator, RouteGenerator>();
 
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 

@@ -11,6 +11,12 @@ public class DistributionCenter : BaseAuditableEntity
     /// <summary>Logistics program (programa_logistico).</summary>
     public string LogisticsProgram { get; set; } = string.Empty;
 
+    /// <summary>Longitude in WGS84 degrees. Routes start and end here when it is known.</summary>
+    public double? X { get; set; }
+
+    /// <summary>Latitude in WGS84 degrees. Routes start and end here when it is known.</summary>
+    public double? Y { get; set; }
+
     /// <summary>CUBRE: zones covered by the center.</summary>
     public IList<CenterZone> CoveredZones { get; private set; } = new List<CenterZone>();
 
