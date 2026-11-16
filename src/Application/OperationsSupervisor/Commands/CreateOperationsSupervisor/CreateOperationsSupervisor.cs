@@ -37,7 +37,7 @@ public class CreateOperationsSupervisorCommandHandler : IRequestHandler<CreateOp
 
         var entity = new OperationsSupervisor
         {
-            UserId = request.UserId,
+            Id = request.UserId,
             ControlArea=request.ControlArea
         };
 

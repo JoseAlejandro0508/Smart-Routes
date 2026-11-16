@@ -37,7 +37,7 @@ public class CreateLogisticCordinatorCommandHandler : IRequestHandler<CreateLogi
 
         var entity = new LogisticsCoordinator
         {
-            UserId = request.UserId,
+            Id = request.UserId,
             Specialty=request.Speciality
         };
 

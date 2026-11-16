@@ -6,7 +6,6 @@ namespace Smart_Routes.Domain.Entities;
 /// </summary>
 public class OperationsSupervisor : BaseUserProfile
 {
-    public required string UserId { get; set; }
     /// <summary>Control area (area_control).</summary>
     public required string ControlArea { get; set; } = string.Empty;
 

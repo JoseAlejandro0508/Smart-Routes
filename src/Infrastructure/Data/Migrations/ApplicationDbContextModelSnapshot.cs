@@ -178,7 +178,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Administrators");
+                    b.ToTable("Administrators", t =>
+                        {
+                            t.HasCheckConstraint("CK_Administrators_AccessLevel", "[AccessLevel] IN (0, 1)");
+                        });
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.BalanceCriterion", b =>
@@ -268,7 +271,15 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.ToTable("BalanceParameters", t =>
                         {
+                            t.HasCheckConstraint("CK_BalanceParameters_Metric", "[Metric] IN (0, 1, 2, 3, 4)");
+
+                            t.HasCheckConstraint("CK_BalanceParameters_Operator", "[Operator] IN (0, 1, 2)");
+
+                            t.HasCheckConstraint("CK_BalanceParameters_ProportionRange", "[Metric] <> 1 OR ([AppliedValue] >= 0 AND [AppliedValue] <= 1)");
+
                             t.HasCheckConstraint("CK_BalanceParameters_TargetDeliveryType", "([Metric] = 1 AND [TargetDeliveryType] IS NOT NULL) OR ([Metric] <> 1 AND [TargetDeliveryType] IS NULL)");
+
+                            t.HasCheckConstraint("CK_BalanceParameters_TargetDeliveryTypeDomain", "[TargetDeliveryType] IS NULL OR [TargetDeliveryType] IN (0, 1, 2)");
                         });
                 });
 
@@ -329,13 +340,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("DeliveryPersons");
+                    b.ToTable("DeliveryPersons", t =>
+                        {
+                            t.HasCheckConstraint("CK_DeliveryPersons_Adult", "DATEADD(year, 18, [DateOfBirth]) <= CAST(GETDATE() AS date)");
+                        });
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.DeliveryPersonCenter", b =>
@@ -395,7 +405,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.HasIndex("RouteId", "OrderId")
                         .IsUnique();
 
-                    b.ToTable("DeliveryRecords");
+                    b.ToTable("DeliveryRecords", t =>
+                        {
+                            t.HasCheckConstraint("CK_DeliveryRecords_Result", "[Result] IN (0, 1)");
+                        });
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.DistributionCenter", b =>
@@ -436,7 +449,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DistributionCenters");
+                    b.ToTable("DistributionCenters", t =>
+                        {
+                            t.HasCheckConstraint("CK_DistributionCenters_Coordinates", "([X] IS NULL AND [Y] IS NULL) OR ([X] BETWEEN -180 AND 180 AND [Y] BETWEEN -90 AND 90)");
+                        });
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.LogisticsCoordinator", b =>
@@ -461,10 +477,6 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -492,10 +504,6 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -571,6 +579,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_Orders_DeadlineAt", "CAST([DeadlineAt] AS date) >= [EntryDate]");
 
+                            t.HasCheckConstraint("CK_Orders_DeliveryType", "[DeliveryType] IN (0, 1, 2)");
+
+                            t.HasCheckConstraint("CK_Orders_Priority", "[Priority] IN (0, 1, 2)");
+
+                            t.HasCheckConstraint("CK_Orders_Status", "[Status] IN (0, 1, 2, 3)");
+
                             t.HasCheckConstraint("CK_Orders_WeightKg", "[WeightKg] > 0");
                         });
                 });
@@ -632,9 +646,13 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.ToTable("Reschedulings", t =>
                         {
+                            t.HasCheckConstraint("CK_Reschedulings_ManualResult", "[ManualResult] IS NULL OR [ManualResult] IN (0, 1, 2)");
+
                             t.HasCheckConstraint("CK_Reschedulings_Resolution", "([Status] = 2 AND [ManualResult] IS NOT NULL AND [ResolutionDate] IS NOT NULL) OR ([Status] <> 2 AND [ManualResult] IS NULL AND [ResolutionDate] IS NULL)");
 
                             t.HasCheckConstraint("CK_Reschedulings_ResolutionDate", "[ResolutionDate] IS NULL OR [ResolutionDate] > [RequestDate]");
+
+                            t.HasCheckConstraint("CK_Reschedulings_Status", "[Status] IN (0, 1, 2)");
                         });
                 });
 
@@ -686,6 +704,8 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.ToTable("Reviews", t =>
                         {
+                            t.HasCheckConstraint("CK_Reviews_Decision", "[Decision] IN (0, 1, 2)");
+
                             t.HasCheckConstraint("CK_Reviews_Observations", "[Decision] <> 1 OR [Observations] IS NOT NULL");
                         });
                 });
@@ -862,7 +882,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("Stops");
+                    b.ToTable("Stops", t =>
+                        {
+                            t.HasCheckConstraint("CK_Stops_Coordinates", "([X] IS NULL AND [Y] IS NULL) OR ([X] BETWEEN -180 AND 180 AND [Y] BETWEEN -90 AND 90)");
+                        });
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.TodoItem", b =>
@@ -967,6 +990,42 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Zones");
+                });
+
+            modelBuilder.Entity("Smart_Routes.Infrastructure.Data.Configurations.UniversalKeyRow", b =>
+                {
+                    b.Property<string>("CoordinatorId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("DistributionCenterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BalanceParameterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReviewId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeliveryRecordId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReschedulingId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CoordinatorId", "DistributionCenterId", "BalanceParameterId", "ReviewId", "DeliveryRecordId", "ReschedulingId");
+
+                    b.HasIndex("BalanceParameterId");
+
+                    b.HasIndex("DeliveryRecordId");
+
+                    b.HasIndex("DistributionCenterId");
+
+                    b.HasIndex("ReschedulingId");
+
+                    b.HasIndex("ReviewId");
+
+                    b.ToTable("RK", (string)null);
                 });
 
             modelBuilder.Entity("Smart_Routes.Infrastructure.Identity.ApplicationUser", b =>
@@ -1454,6 +1513,45 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         });
 
                     b.Navigation("Colour")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Smart_Routes.Infrastructure.Data.Configurations.UniversalKeyRow", b =>
+                {
+                    b.HasOne("Smart_Routes.Domain.Entities.BalanceParameter", null)
+                        .WithMany()
+                        .HasForeignKey("BalanceParameterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Routes.Domain.Entities.LogisticsCoordinator", null)
+                        .WithMany()
+                        .HasForeignKey("CoordinatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Routes.Domain.Entities.DeliveryRecord", null)
+                        .WithMany()
+                        .HasForeignKey("DeliveryRecordId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Routes.Domain.Entities.DistributionCenter", null)
+                        .WithMany()
+                        .HasForeignKey("DistributionCenterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Routes.Domain.Entities.Rescheduling", null)
+                        .WithMany()
+                        .HasForeignKey("ReschedulingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Routes.Domain.Entities.Review", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

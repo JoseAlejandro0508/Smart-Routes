@@ -9,8 +9,11 @@ namespace Smart_Routes.Domain.Entities;
 /// </remarks>
 public class DeliveryPerson : BaseUserProfile
 {
-    public required string UserId { get; set; } 
 
+    /// <summary>
+    /// Birth date. The report stores edad (age); storing the birth date keeps the age correct over time,
+    /// and the edad &gt;= 18 rule is enforced by a check constraint on this column.
+    /// </summary>
     public DateOnly DateOfBirth { get; set; }
 
     /// <summary>Fleet the delivery person belongs to (flota).</summary>
