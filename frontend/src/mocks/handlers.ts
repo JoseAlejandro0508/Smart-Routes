@@ -2,7 +2,7 @@
 import { http, HttpResponse, delay } from 'msw'
 import { db, findUser, hashPassword ,persistResetTokens } from './db'
 import type { CreateOrderPayload, OrderSummary } from '../api/orders.api'
-import type { GenerateRoutePayload, RouteSummary, ReviewRoutePayload } from '../api/routes.api'
+import type { GenerateRoutePayload, RouteMap, RouteSummary, ReviewRoutePayload } from '../api/routes.api'
 import type { AssignedRoute, RecordDeliveryPayload } from '../api/deliveries.api'
 import type { CreateReschedulingPayload, ManualResolution, ReschedulingRequest } from '../api/reschedulings.api'
 import type { AdminUserRole } from '../api/admin.api'
@@ -63,6 +63,52 @@ const mockRoutes: RouteSummary[] = [
     parameters: [{ label: 'Proporción de tipo', value: '60% paquetería / 20% documentos / 20% perecederos' }, { label: 'Cobertura de zonas', value: '3 zonas' }, { label: 'Peso total', value: '59.7 kg' }],
   },
 ]
+
+// Puntos reales de La Habana para el mapa simulado. El backend real calcula el trazado con OSRM.
+const mockMapPlaces: { address: string; latitude: number; longitude: number; zoneId: number }[] = [
+  { address: 'Calle 23 y L, Vedado', latitude: 23.1381, longitude: -82.3857, zoneId: 2 },
+  { address: 'Malecón y Galiano, Centro Habana', latitude: 23.1436, longitude: -82.3684, zoneId: 1 },
+  { address: 'Obispo y Mercaderes, Habana Vieja', latitude: 23.1380, longitude: -82.3510, zoneId: 3 },
+  { address: 'Paseo y Línea, Vedado', latitude: 23.1430, longitude: -82.3980, zoneId: 2 },
+  { address: 'Reina y Belascoaín, Centro Habana', latitude: 23.1335, longitude: -82.3740, zoneId: 1 },
+  { address: 'Calle G y 25, Vedado', latitude: 23.1366, longitude: -82.3890, zoneId: 2 },
+]
+
+function mockRouteMap(route: RouteSummary): RouteMap {
+  const center = route.centerName === 'Centro Vedado'
+    ? { latitude: 23.1330, longitude: -82.3920 }
+    : { latitude: 23.1365, longitude: -82.3600 }
+  const priorities = ['Urgent', 'Medium', 'Low'] as const
+  const stops = mockMapPlaces.slice(0, Math.min(mockMapPlaces.length, 3 + (route.id % 4))).map((place, index) => ({
+    visitOrder: index + 1,
+    stopId: route.id * 10 + index,
+    address: place.address,
+    zoneId: place.zoneId,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    orders: [{
+      id: route.id * 100 + index,
+      description: `Pedido ${index + 1} de la ruta #${route.id}`,
+      priority: priorities[index % priorities.length],
+      deliveryType: 'Parcel',
+      weightKg: 2 + index,
+      deadlineAt: `${route.scheduledDate}T18:00:00Z`,
+      status: 'InRoute',
+    }],
+  }))
+  const latLngs: [number, number][] = [
+    [center.latitude, center.longitude],
+    ...stops.map((stop) => [stop.latitude, stop.longitude] as [number, number]),
+    [center.latitude, center.longitude],
+  ]
+  return {
+    routeId: route.id,
+    scheduledDate: route.scheduledDate,
+    center: { id: 1, name: route.centerName, ...center },
+    stops,
+    path: { latLngs, distanceMeters: 1800 * latLngs.length, durationSeconds: 240 * latLngs.length, source: 'estimated' },
+  }
+}
 
 const assignedRoutes: AssignedRoute[] = [
   {
@@ -419,6 +465,19 @@ export const handlers = [
     } catch {
       return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
     }
+  }),
+
+  // GET /api/routes/:id/map
+  http.get('/api/routes/:id/map', async ({ request, params }) => {
+    await randomDelay()
+    try {
+      authenticatedUser(request)
+    } catch {
+      return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
+    }
+    const route = mockRoutes.find((item) => item.id === Number(params.id))
+    if (!route) return HttpResponse.json({ message: 'Ruta no encontrada' }, { status: 404 })
+    return HttpResponse.json(mockRouteMap(route))
   }),
 
   // POST /api/routes/generate
