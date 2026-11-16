@@ -7,9 +7,11 @@ public class Stop : BaseAuditableEntity
 {
     /// <summary>Address (direccion).</summary>
     public string Address { get; set; } = string.Empty;
-    /// <summary>Coordinates (coordenadas).</summary>
-    public double X { get; set; }
-    public double Y { get; set; }
+    /// <summary>Longitude in WGS84 degrees; null until the stop is located on the map.</summary>
+    public double? X { get; set; }
+
+    /// <summary>Latitude in WGS84 degrees; null until the stop is located on the map.</summary>
+    public double? Y { get; set; }
 
     /// <summary>LOCALIZADA_EN: zone where the stop is located.</summary>
     public int ZoneId { get; set; }

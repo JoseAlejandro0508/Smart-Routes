@@ -77,7 +77,7 @@ public class DistributionCenterManagement : IEndpointGroup
 
     [EndpointSummary("Remove covered zones")]
     [EndpointDescription("Removes one or more zones from a distribution center.")]
-    public static async Task<Results<NoContent, BadRequest>> RemoveCoveredZones(ISender sender, RemoveCoveredZonesCommand request)
+    public static async Task<Results<NoContent, BadRequest>> RemoveCoveredZones(ISender sender, [FromBody] RemoveCoveredZonesCommand request)
     {
         await sender.Send(request);
         return TypedResults.NoContent();
@@ -93,7 +93,7 @@ public class DistributionCenterManagement : IEndpointGroup
 
     [EndpointSummary("Remove logistics coordinators")]
     [EndpointDescription("Removes one or more logistics coordinators from a distribution center.")]
-    public static async Task<Results<NoContent, BadRequest>> RemoveLogisticsCoordinators(ISender sender, RemoveLogisticsCoordinatorsCommand request)
+    public static async Task<Results<NoContent, BadRequest>> RemoveLogisticsCoordinators(ISender sender, [FromBody] RemoveLogisticsCoordinatorsCommand request)
     {
         await sender.Send(request);
         return TypedResults.NoContent();
@@ -109,7 +109,7 @@ public class DistributionCenterManagement : IEndpointGroup
 
     [EndpointSummary("Remove delivery persons")]
     [EndpointDescription("Removes one or more delivery persons from a distribution center.")]
-    public static async Task<Results<NoContent, BadRequest>> RemoveDeliveryPersons(ISender sender, RemoveDeliveryPersonsCommand request)
+    public static async Task<Results<NoContent, BadRequest>> RemoveDeliveryPersons(ISender sender, [FromBody] RemoveDeliveryPersonsCommand request)
     {
         await sender.Send(request);
         return TypedResults.NoContent();

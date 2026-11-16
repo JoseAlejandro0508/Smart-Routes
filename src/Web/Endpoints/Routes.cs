@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Routes.Application.Common.Models;
 using Smart_Routes.Application.Routes.Commands.AddReview;
 using Smart_Routes.Application.Routes.Commands.Generate;
 using Smart_Routes.Application.Routes.Commands.GetRouteByFilter;
+using Smart_Routes.Application.Routes.Queries.GetRouteMap;
 using Smart_Routes.Domain.Constants;
 using Smart_Routes.Domain.Entities;
 
@@ -26,11 +28,13 @@ public class RoutesManagement : IEndpointGroup
             Roles = $"{Roles.OperationsSupervisor}"
         });
         groupBuilder.MapGet(GetRoutesByFilter, "filter").RequireAuthorization();
+        groupBuilder.MapGet(GetRouteMap, "{id}/map").RequireAuthorization()
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     [EndpointSummary("Generate a route")]
     [EndpointDescription("Creates a route and returns the generated order sequence for the selected distribution center, delivery person and balance criterion.")]
-    public static async Task<Results<Ok<List<Order>>, BadRequest>> GenerateRoute(ISender sender, GenerateCommand request)
+    public static async Task<Results<Ok<GeneratedRouteDto>, BadRequest>> GenerateRoute(ISender sender, GenerateCommand request)
     {
         var result = await sender.Send(request);
         return TypedResults.Ok(result);
@@ -51,6 +55,14 @@ public class RoutesManagement : IEndpointGroup
         [AsParameters] GetRouteByFilter request)
     {
         var result = await sender.Send(request);
+        return TypedResults.Ok(result);
+    }
+
+    [EndpointSummary("Get the map of a route")]
+    [EndpointDescription("Returns the distribution center, the stops in visiting order with their orders, and the path along the roads computed with OSRM on the OpenStreetMap road graph. Coordinates are [latitude, longitude] pairs, ready for Leaflet.")]
+    public static async Task<Ok<RouteMapDto>> GetRouteMap(ISender sender, int id)
+    {
+        var result = await sender.Send(new GetRouteMapQuery(id));
         return TypedResults.Ok(result);
     }
 }

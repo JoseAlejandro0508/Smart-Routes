@@ -10,7 +10,7 @@ public class RouteDto
     public int DistributionCenterId { get; set; }
     public string? DeliveryPersonId { get; set; }
     public int BalanceCriterionId { get; set; }
-    public List<Order> OrdersOrdered { get; set; } = [];
+    public List<RouteOrderDto> OrdersOrdered { get; set; } = [];
     public BalanceCriterionWithParametersDto? BalanceCriterion { get; set; }
     public DateTimeOffset Created{get; set; }
 }

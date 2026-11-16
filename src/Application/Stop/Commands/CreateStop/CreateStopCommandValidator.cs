@@ -11,5 +11,11 @@ public class CreateStopCommandValidator : AbstractValidator<CreateStopCommand>
 
         RuleFor(x => x.ZoneId)
             .GreaterThan(0);
+
+        RuleFor(x => x.Latitude).InclusiveBetween(-90, 90).When(x => x.Latitude is not null);
+        RuleFor(x => x.Longitude).InclusiveBetween(-180, 180).When(x => x.Longitude is not null);
+        RuleFor(x => x)
+            .Must(x => (x.Latitude is null) == (x.Longitude is null))
+            .WithMessage("Latitude and Longitude must be sent together.");
     }
 }

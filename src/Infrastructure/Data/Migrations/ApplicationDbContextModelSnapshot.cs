@@ -229,6 +229,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("AppliedValue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
                     b.Property<int>("BalanceCriterionId")
                         .HasColumnType("int");
 
@@ -323,6 +327,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -420,6 +428,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<double?>("X")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Y")
+                        .HasColumnType("float");
+
                     b.HasKey("Id");
 
                     b.ToTable("DistributionCenters");
@@ -448,6 +462,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("LogisticsCoordinators");
@@ -474,6 +492,10 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -624,6 +646,9 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BalanceCriterioId")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("datetimeoffset");
 
@@ -643,9 +668,6 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<DateTimeOffset>("ReviewedAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<int>("RouteId")
                         .HasColumnType("int");
 
@@ -656,10 +678,11 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SupervisorId");
+                    b.HasIndex("BalanceCriterioId");
 
-                    b.HasIndex("RouteId", "ReviewedAt")
-                        .IsUnique();
+                    b.HasIndex("RouteId");
+
+                    b.HasIndex("SupervisorId");
 
                     b.ToTable("Reviews", t =>
                         {
@@ -694,14 +717,14 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BalanceCriterionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreationDate")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeliveryPersonId")
                         .HasMaxLength(450)
@@ -724,14 +747,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.Property<int?>("OriginReviewId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("ScheduledDate")
-                        .HasColumnType("date");
-
-                    b.Property<decimal>("VehicleCapacityKg")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<DateTimeOffset>("ScheduledDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BalanceCriterionId");
 
                     b.HasIndex("DeliveryPersonId");
 
@@ -745,9 +766,7 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.ToTable("Routes", t =>
                         {
-                            t.HasCheckConstraint("CK_Routes_ScheduledDate", "[ScheduledDate] >= CAST([CreationDate] AS date)");
-
-                            t.HasCheckConstraint("CK_Routes_VehicleCapacityKg", "[VehicleCapacityKg] > 0");
+                            t.HasCheckConstraint("CK_Routes_ScheduledDate", "CAST([ScheduledDate] AS date) >= CAST([Created] AS date)");
                         });
                 });
 
@@ -771,16 +790,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.Property<int>("RouteId")
                         .HasColumnType("int");
 
-                    b.Property<int>("BalanceParameterId")
+                    b.Property<int>("BalanceCriterionId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("AppliedValue")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
+                    b.HasKey("RouteId", "BalanceCriterionId");
 
-                    b.HasKey("RouteId", "BalanceParameterId");
-
-                    b.HasIndex("BalanceParameterId");
+                    b.HasIndex("BalanceCriterionId");
 
                     b.ToTable("RouteParameters");
                 });
@@ -833,6 +848,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("X")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Y")
+                        .HasColumnType("float");
 
                     b.Property<int>("ZoneId")
                         .HasColumnType("int");
@@ -970,15 +991,17 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -996,9 +1019,6 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<int>("RoleType")
-                        .HasColumnType("int");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -1251,6 +1271,11 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.Review", b =>
                 {
+                    b.HasOne("Smart_Routes.Domain.Entities.BalanceCriterion", "BalanceCriterion")
+                        .WithMany("Reviews")
+                        .HasForeignKey("BalanceCriterioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Smart_Routes.Domain.Entities.Route", "Route")
                         .WithMany("Reviews")
                         .HasForeignKey("RouteId")
@@ -1262,6 +1287,8 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .HasForeignKey("SupervisorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("BalanceCriterion");
 
                     b.Navigation("Route");
 
@@ -1277,7 +1304,7 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Smart_Routes.Domain.Entities.Review", "Review")
-                        .WithMany("IndicatedParameters")
+                        .WithMany()
                         .HasForeignKey("ReviewId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1289,6 +1316,12 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.Route", b =>
                 {
+                    b.HasOne("Smart_Routes.Domain.Entities.BalanceCriterion", "BalanceCriterion")
+                        .WithMany("Routes")
+                        .HasForeignKey("BalanceCriterionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Smart_Routes.Domain.Entities.DeliveryPerson", "DeliveryPerson")
                         .WithMany("Routes")
                         .HasForeignKey("DeliveryPersonId")
@@ -1310,6 +1343,8 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                         .WithOne("ReconfiguredRoute")
                         .HasForeignKey("Smart_Routes.Domain.Entities.Route", "OriginReviewId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("BalanceCriterion");
 
                     b.Navigation("DeliveryPerson");
 
@@ -1341,19 +1376,19 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.RouteParameter", b =>
                 {
-                    b.HasOne("Smart_Routes.Domain.Entities.BalanceParameter", "BalanceParameter")
-                        .WithMany("RouteParameters")
-                        .HasForeignKey("BalanceParameterId")
+                    b.HasOne("Smart_Routes.Domain.Entities.BalanceCriterion", "BalanceCriterion")
+                        .WithMany()
+                        .HasForeignKey("BalanceCriterionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Smart_Routes.Domain.Entities.Route", "Route")
-                        .WithMany("RouteParameters")
+                        .WithMany()
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BalanceParameter");
+                    b.Navigation("BalanceCriterion");
 
                     b.Navigation("Route");
                 });
@@ -1425,13 +1460,15 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
             modelBuilder.Entity("Smart_Routes.Domain.Entities.BalanceCriterion", b =>
                 {
                     b.Navigation("Parameters");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Routes");
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.BalanceParameter", b =>
                 {
                     b.Navigation("ReviewParameters");
-
-                    b.Navigation("RouteParameters");
                 });
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.DeliveryPerson", b =>
@@ -1479,8 +1516,6 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Smart_Routes.Domain.Entities.Review", b =>
                 {
-                    b.Navigation("IndicatedParameters");
-
                     b.Navigation("ReconfiguredRoute");
                 });
 
@@ -1489,8 +1524,6 @@ namespace Smart_Routes.Infrastructure.Data.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("RouteOrders");
-
-                    b.Navigation("RouteParameters");
 
                     b.Navigation("RouteStops");
                 });

@@ -51,6 +51,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     public DbSet<Review> Reviews => Set<Review>();
 
+    public DbSet<ReviewParameter> ReviewParameters => Set<ReviewParameter>();
+
 
 
     public DbSet<DeliveryRecord> DeliveryRecords => Set<DeliveryRecord>();
