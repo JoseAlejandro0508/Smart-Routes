@@ -4,6 +4,7 @@ using Smart_Routes.Domain.ValueObjects;
 using Smart_Routes.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -41,9 +42,10 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            // See https://jasontaylor.dev/ef-core-database-initialisation-strategies
-            await _context.Database.EnsureDeletedAsync();
-            await _context.Database.EnsureCreatedAsync();
+            // Applies the pending migrations and keeps the data between runs.
+            // Recreating the database on every start (EnsureDeleted + EnsureCreated) lost all data
+            // and skipped the migrations, so the schema used in development was not the one deployed.
+            await _context.Database.MigrateAsync();
         }
         catch (Exception ex)
         {

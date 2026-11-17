@@ -34,29 +34,14 @@ public class CreateBalanceCriterionCommandHandler : IRequestHandler<CreateBalanc
 
     {
         bool isLogisticsCoordinator = _user.Roles!.FirstOrDefault(x => x == Roles.LogisticsCoordinator) != null;
-        var criterion = new BalanceCriterion
-        {
-            Name = request.Name,
-            Description = request.Description,
-            AuthorCoordinatorId = isLogisticsCoordinator ? _user.Id : null,
-        };
-        await _context.BalanceCriteria.AddAsync(
-            criterion,cancellationToken
-        );
-        await _context.SaveChangesAsync(cancellationToken);
+        var criterion = BalanceCriterionBuilder.Build(
+            request.Name,
+            request.Description,
+            request.CustomBalancedParameters,
+            isLogisticsCoordinator ? _user.Id : null);
 
-        foreach (var parameter in request.CustomBalancedParameters)
-        {
-            _context.BalanceParameters.Add(new BalanceParameter
-            {
-                Name = parameter.Name,
-                Metric = parameter.Metric,
-                Operator = parameter.Operator,
-                AppliedValue = parameter.AppliedValue,
-                BalanceCriterionId = criterion.Id
-            });
-        }
-
+        // One save inserts the criterion and its parameters in the same transaction.
+        await _context.BalanceCriteria.AddAsync(criterion, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
         return criterion.Id;
         }

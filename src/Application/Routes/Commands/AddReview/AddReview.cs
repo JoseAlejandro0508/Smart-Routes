@@ -1,3 +1,4 @@
+using Smart_Routes.Application.BalanceCriterions;
 using Smart_Routes.Application.Common.Interfaces;
 using Smart_Routes.Application.Common.Models;
 using Smart_Routes.Application.Common.Security;
@@ -48,6 +49,20 @@ public class AddReviewCommandHandler : IRequestHandler<AddReviewCommand>
             }
             finalBalanceCriterionId = request.BalanceCritertiaId;
 
+        }
+        else if (request.BalanceCriteria is not null)
+        {
+            // The supervisor defines a new criterion for the re-confection. It has no coordinator
+            // author, so it is stored like a predefined criterion and can be reused.
+            var newCriterion = BalanceCriterionBuilder.Build(
+                request.BalanceCriteria.Name,
+                request.BalanceCriteria.Description,
+                request.BalanceCriteria.CustomBalancedParameters,
+                authorCoordinatorId: null);
+
+            await _context.BalanceCriteria.AddAsync(newCriterion, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            finalBalanceCriterionId = newCriterion.Id;
         }
 
         var review = new Review
