@@ -1,3 +1,4 @@
+using Smart_Routes.Application.Common.Exceptions;
 using Smart_Routes.Application.Common.Interfaces;
 using Smart_Routes.Application.Common.Security;
 using Smart_Routes.Domain.Constants;
@@ -5,7 +6,7 @@ using Smart_Routes.Domain.Entities;
 
 namespace Smart_Routes.Application.Stops.Commands.DeleteStop;
 
-[Authorize(Roles = Roles.Administrator)]
+[Authorize(Roles = $"{Roles.LogisticsCoordinator},{Roles.Administrator}")]
 public record DeleteStopCommand : IRequest
 {
     public int StopId { get; set; }
@@ -34,7 +35,8 @@ public class DeleteStopCommandHandler : IRequestHandler<DeleteStopCommand>
 
         if (entity.Orders.Any() || entity.RouteStops.Any())
         {
-            throw new ValidationException("Stop cannot be deleted because it has associated orders or routes.");
+            // Deleting would break the orders and routes that point to it (restricted delete, 3.4).
+            throw new ConflictException("Stop cannot be deleted because it has associated orders or routes.");
         }
 
         _context.Stops.Remove(entity);
