@@ -21,6 +21,13 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
                 Status = StatusCodes.Status400BadRequest,
                 Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
             }),
+            // Some handlers throw FluentValidation's exception (it is a global using in Application);
+            // it is a validation error too, so it is a 400 and not an unhandled 500.
+            FluentValidation.ValidationException fve => (StatusCodes.Status400BadRequest, (ProblemDetails)new ValidationProblemDetails(ToErrors(fve))
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
+            }),
             NotFoundException ne => (StatusCodes.Status404NotFound, new ProblemDetails
             {
                 Status = StatusCodes.Status404NotFound,
@@ -55,5 +62,21 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
         httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
         return true;
+    }
+
+    /// <summary>
+    /// Groups FluentValidation failures by property. An exception built only with a message
+    /// has no failures, so its message is returned under an empty key.
+    /// </summary>
+    private static IDictionary<string, string[]> ToErrors(FluentValidation.ValidationException exception)
+    {
+        if (!exception.Errors.Any())
+        {
+            return new Dictionary<string, string[]> { [string.Empty] = [exception.Message] };
+        }
+
+        return exception.Errors
+            .GroupBy(failure => failure.PropertyName, failure => failure.ErrorMessage)
+            .ToDictionary(group => group.Key, group => group.ToArray());
     }
 }
