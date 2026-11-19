@@ -235,9 +235,14 @@ falla.
 | `401 No autorizado` en un módulo mockeado | Falta el `Authorization: Bearer` o el token no corresponde a un usuario de `db.users`. |
 | `403` con un usuario válido | El handler exige otro rol (por ejemplo, solo `Administrator` puede tocar roles). |
 
-## Deuda pendiente
+## Pruebas automatizadas
 
-El proyecto todavía no tiene un runner de tests. `resolveMockModules()` en
-`config.ts` es una función pura y se cubriría con un `config.test.ts` cuando se
-incorpore Vitest; hasta entonces, la matriz de la sección **Pruebas manuales**
-es la verificación de referencia.
+El frontend ya incluye **Vitest**. `resolveMockModules()` en `config.ts` está
+cubierto por `config.test.ts`:
+
+```bash
+npm run test
+```
+
+La matriz de la sección **Pruebas manuales** sigue siendo la referencia para
+verificar el comportamiento del service worker en el navegador.
