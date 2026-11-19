@@ -1,12 +1,8 @@
 # Smart Routes — Frontend
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
-# Frontend de Smart Routes: gestión de pedidos, generación y validación de rutas, operación de repartidores, reprogramaciones, administración de roles y reportes para una empresa de logística de última milla.
-# Sistema de Autenticación — Frontend
-
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![MSW](https://img.shields.io/badge/MSW-3-FF6A33?logo=&logoColor=white)
@@ -51,8 +47,8 @@ La capa de red opera sobre una **API simulada con MSW (Mock Service Worker)** qu
 | Tecnología | Versión | Responsabilidad |
 |---|---|---|
 | React | 19 | Biblioteca de UI (React Compiler habilitado) |
-| Vite | 7 | Empaquetador y servidor de desarrollo |
-| TypeScript | 5.9 | Tipado estático estricto |
+| Vite | 8 | Empaquetador y servidor de desarrollo |
+| TypeScript | 7.0 | Tipado estático estricto |
 | TanStack Query | 5 | Gestión del estado del servidor (sesión en cache) |
 | React Hook Form + Zod | — | Formularios no controlados con validación por schema |
 | axios | — | Cliente HTTP con interceptores de autenticación |
@@ -61,7 +57,7 @@ La capa de red opera sobre una **API simulada con MSW (Mock Service Worker)** qu
 
 ## ⚙️ Instalación y ejecución
 
-**Requisitos:** Node.js 20+ y npm.
+**Requisitos:** Node.js 20.19+ (o 22.12+) y npm.
 
 ```bash
 npm install
@@ -178,7 +174,7 @@ src/
 │   └── schemas.ts         # Schemas Zod de todos los formularios y sus tipos
 ├── mocks/
 │   ├── db.ts              # Estado en memoria del mock (persistencia selectiva)
-│   └── handlers.ts        # Definición de los 9 endpoints (el contrato)
+│   └── handlers.ts        # Definición de los 24 endpoints (el contrato)
 ├── components/
 │   ├── ErrorBoundary.tsx  # Contención global de errores de render
 │   └── ui/                # Componentes reutilizables (TextField, Toast)

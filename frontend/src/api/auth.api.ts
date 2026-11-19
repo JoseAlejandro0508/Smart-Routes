@@ -18,6 +18,20 @@ export interface User {
   role: UserRole
 }
 
+// Guard de runtime: evita que una respuesta que no sea un User (por ejemplo,
+// el index.html que devuelve el dev server para rutas desconocidas) se cuele
+// como sesión válida y reviente al leer sus propiedades.
+export function isUser(value: unknown): value is User {
+  if (typeof value !== 'object' || value === null) return false
+  const candidate = value as Partial<User>
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.email === 'string' &&
+    typeof candidate.role === 'string'
+  )
+}
+
 interface LoginTokens {
   requiresTwoFactor?: false
   accessToken: string

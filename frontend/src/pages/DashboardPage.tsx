@@ -21,7 +21,7 @@ export function DashboardPage() {
     enabled: Boolean(user),
   })
 
-  const firstName = user?.name.split(' ')[0]
+  const firstName = user?.name?.split(' ')[0] ?? user?.email
 
   return (
     <div className="space-y-6">

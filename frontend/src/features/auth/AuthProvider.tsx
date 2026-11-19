@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { authApi, type LoginResponse, type User } from '../../api/auth.api'
+import { authApi, isUser, type LoginResponse, type User } from '../../api/auth.api'
 import { tokenStore } from '../../api/http'
 
 // Clave ESTABLE de cache. La sesión vive aquí, no en useState suelto.
@@ -25,9 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // La sesión viva: GET /auth/me con el token guardado 
   // Esto es lo que hace que F5 no te bote: al recargar, hay token
   // en localStorage → se consulta /me → el cache se llena → sesión viva.
+  // fetchMe valida la forma: una respuesta inválida se trata como "sin sesión".
+  async function fetchMe(): Promise<User | null> {
+    const me = await authApi.me()
+    return isUser(me) ? me : null
+  }
+
   const { data, isPending } = useQuery({
     queryKey: SESSION_KEY,
-    queryFn: () => authApi.me(),
+    queryFn: fetchMe,
     retry: false,             // un 401 aquí NO se reintenta (no es fallo de red)
     enabled: !!tokenStore.access, // sin token ni lo intentes
     staleTime: 5 * 60 * 1000, // 5 min sin refetch innecesario
@@ -47,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // había token al montar) y localStorage no dispara re-renders:
       // la invalidación no la despertaría. setQueryData sí actualiza
       // a los observadores al instante.
-      queryClient.setQueryData(SESSION_KEY, await authApi.me())
+      queryClient.setQueryData(SESSION_KEY, await fetchMe())
     }
     return res
   }
@@ -55,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function verify2FA(challengeToken: string, code: string): Promise<void> {
     const res = await authApi.verify2FA(challengeToken, code)
     tokenStore.set(res.accessToken, res.refreshToken)
-    queryClient.setQueryData(SESSION_KEY, await authApi.me())
+    queryClient.setQueryData(SESSION_KEY, await fetchMe())
   }
 
   function logout() {

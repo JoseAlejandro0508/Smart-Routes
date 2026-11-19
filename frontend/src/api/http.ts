@@ -29,7 +29,7 @@ export const tokenStore = {
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '/api',
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 })
 
 // INTERCEPTOR DE REQUEST: adjunta el token a cada petición saliente
