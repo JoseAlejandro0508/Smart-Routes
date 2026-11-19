@@ -75,7 +75,12 @@ Usa `.env.example` como plantilla (git lo ignora — cópialo a `.env.developmen
 ```env
 VITE_ENABLE_MOCKS=true
 VITE_API_URL=/api
+
+# Opcional: módulos de MSW activos (coma). Vacía/ausente = todos.
+# VITE_MOCKS=auth,orders
 ```
+
+`VITE_MOCKS` permite retirar los mocks módulo a módulo a medida que cada endpoint exista en el backend. Valores disponibles: `auth`, `dashboard`, `orders`, `routes`, `deliveries`, `reschedulings`, `admin`, `reports`. Los módulos que no se listen pasan a la API real. Hay que reiniciar el servidor de desarrollo al cambiarla.
 
 La migración al backend real no requiere cambios de código: basta con desactivar el mock y apuntar `VITE_API_URL` al servidor definitivo (los cambios de entorno requieren reiniciar el servidor de desarrollo).
 
@@ -173,8 +178,12 @@ src/
 │   │                      #   auth:session-expired, expone useAuth()
 │   └── schemas.ts         # Schemas Zod de todos los formularios y sus tipos
 ├── mocks/
-│   ├── db.ts              # Estado en memoria del mock (persistencia selectiva)
-│   └── handlers.ts        # Definición de los 24 endpoints (el contrato)
+│   ├── browser.ts         # Worker de MSW creado con los módulos habilitados
+│   ├── config.ts          # VITE_ENABLE_MOCKS / VITE_MOCKS → módulos activos
+│   ├── shared.ts          # Utilidades comunes (tokens, latencia, autenticación)
+│   ├── state.ts           # Estado en memoria de los datos simulados
+│   ├── db.ts              # Usuarios y tokens del mock
+│   └── handlers/          # Los 24 endpoints del contrato, por módulo
 ├── components/
 │   ├── ErrorBoundary.tsx  # Contención global de errores de render
 │   └── ui/                # Componentes reutilizables (TextField, Toast)
@@ -188,7 +197,7 @@ src/
 
 ## 📜 Contrato de la API
 
-Especificación que el backend real debe implementar. Referencia completa de payloads en `src/mocks/handlers.ts` y cliente tipado en `src/api/auth.api.ts`.
+Especificación que el backend real debe implementar. Referencia completa de payloads en `src/mocks/handlers/` y cliente tipado en `src/api/auth.api.ts`.
 
 | Método | Ruta | Cuerpo | Respuesta | Códigos |
 |---|---|---|---|---|
