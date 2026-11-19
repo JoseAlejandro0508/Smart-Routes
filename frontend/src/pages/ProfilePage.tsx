@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'react-router-dom'
 import { changePasswordSchema, type ChangePasswordValues } from '../features/auth/schemas'
 import { authApi } from '../api/auth.api'
-import { getApiErrorMessage } from '../api/http'
+import { applyApiErrors, getApiErrorMessage } from '../api/http'
 import { TextField } from '../components/ui/TextField'
 import { PasswordStrength } from '../components/auth/PasswordStrength'
 import { useToast } from '../components/ui/Toast'
@@ -43,14 +43,21 @@ export function ProfilePage() {
       notify('Contraseña actualizada')
       reset() // limpia el formulario tras el éxito
     } catch (err) {
-      if (isAxiosError(err) && err.response?.status === 400) {
-        // La actual no coincide → error de CAMPO, con foco
-        setError('currentPassword', {
-          type: 'server',
-          message: getApiErrorMessage(err),
-        }, { shouldFocus: true })
-      } else {
-        setError('root.server', { message: getApiErrorMessage(err) })
+      const applied = applyApiErrors(err, setError, {
+        fields: ['currentPassword', 'password', 'confirmPassword'],
+        skipRoot: true,
+      })
+      if (!applied) {
+        if (isAxiosError(err) && err.response?.status === 400) {
+          // La actual no coincide → error de CAMPO, con foco
+          setError(
+            'currentPassword',
+            { type: 'server', message: getApiErrorMessage(err) },
+            { shouldFocus: true },
+          )
+        } else {
+          setError('root.server', { type: 'server', message: getApiErrorMessage(err) })
+        }
       }
     }
   }

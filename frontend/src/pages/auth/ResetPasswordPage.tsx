@@ -6,7 +6,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertCircle, Eye, EyeOff, Lock } from 'lucide-react'
 import { resetSchema, type ResetValues } from '../../features/auth/schemas'
 import { authApi } from '../../api/auth.api'
-import { getApiErrorMessage } from '../../api/http'
+import { applyApiErrors } from '../../api/http'
 import { TextField } from '../../components/ui/TextField'
 import { PrimaryButton } from '../../components/ui/PrimaryButton'
 import { PasswordStrength } from '../../components/auth/PasswordStrength'
@@ -37,7 +37,7 @@ export function ResetPasswordPage() {
       notify('Contraseña actualizada')
       navigate('/login', { replace: true, state: { passwordReset: true } })
     } catch (err) {
-      setError('root.server', { message: getApiErrorMessage(err) })
+      applyApiErrors(err, setError, { fields: ['password', 'confirmPassword'] })
     }
   }
 

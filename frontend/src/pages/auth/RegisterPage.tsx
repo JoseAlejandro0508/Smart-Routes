@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { registerSchema, type RegisterValues } from '../../features/auth/schemas'
 import { authApi } from '../../api/auth.api'
-import { getApiErrorMessage } from '../../api/http'
+import { applyApiErrors, getApiErrorMessage } from '../../api/http'
 import { TextField } from '../../components/ui/TextField'
 import { PrimaryButton } from '../../components/ui/PrimaryButton'
 import { PasswordStrength } from '../../components/auth/PasswordStrength'
@@ -58,14 +58,21 @@ export function RegisterPage() {
         state: { registeredEmail: values.email },
       })
     } catch (err) {
-      // 409 = correo ya registrado → error de CAMPO, con foco automático
-      if (isAxiosError(err) && err.response?.status === 409) {
-        setError('email', {
-          type: 'server',
-          message: getApiErrorMessage(err),
-        }, { shouldFocus: true })
-      } else {
-        setError('root.server', { message: getApiErrorMessage(err) })
+      const applied = applyApiErrors(err, setError, {
+        fields: ['name', 'email', 'password'],
+        skipRoot: true,
+      })
+      if (!applied) {
+        // 409 = correo ya registrado → error de CAMPO, con foco automático
+        if (isAxiosError(err) && err.response?.status === 409) {
+          setError(
+            'email',
+            { type: 'server', message: getApiErrorMessage(err) },
+            { shouldFocus: true },
+          )
+        } else {
+          setError('root.server', { type: 'server', message: getApiErrorMessage(err) })
+        }
       }
     }
   }

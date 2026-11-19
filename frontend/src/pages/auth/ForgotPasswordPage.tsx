@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { Mail, MailCheck } from 'lucide-react'
 import { forgotSchema, type ForgotValues } from '../../features/auth/schemas'
 import { authApi } from '../../api/auth.api'
-import { getApiErrorMessage } from '../../api/http'
+import { applyApiErrors } from '../../api/http'
 import { TextField } from '../../components/ui/TextField'
 import { PrimaryButton } from '../../components/ui/PrimaryButton'
 
@@ -30,7 +30,7 @@ export function ForgotPasswordPage() {
       // (si dijéramos "ese correo no existe", filtraríamos la db)
       setSentTo(values.email)
     } catch (err) {
-      setError('root.server', { message: getApiErrorMessage(err) })
+      applyApiErrors(err, setError, { fields: ['email'] })
     }
   }
 

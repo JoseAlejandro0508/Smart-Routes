@@ -7,7 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { loginSchema, type LoginValues } from '../../features/auth/schemas'
 import { useAuth } from '../../features/auth/AuthProvider'
-import { getApiErrorMessage } from '../../api/http'
+import { applyApiErrors } from '../../api/http'
 import { TextField } from '../../components/ui/TextField'
 import { PrimaryButton } from '../../components/ui/PrimaryButton'
 import { SocialButton } from '../../components/ui/SocialButton'
@@ -72,7 +72,7 @@ export function LoginPage() {
       if (isAxiosError(err) && err.response?.status === 429) {
         setLockSeconds(30) // el backend real mandaría Retry-After; demo: 30s
       }
-      setError('root.server', { message: getApiErrorMessage(err) })
+      applyApiErrors(err, setError, { fields: ['email', 'password'] })
     }
   }
 
