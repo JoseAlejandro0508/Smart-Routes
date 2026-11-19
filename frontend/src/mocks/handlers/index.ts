@@ -11,12 +11,14 @@ import { ordersHandlers } from './orders'
 import { reportsHandlers } from './reports'
 import { reschedulingsHandlers } from './reschedulings'
 import { routesHandlers } from './routes'
+import { stopsHandlers } from './stops'
 
 /** Handlers de MSW agrupados por módulo funcional. */
 export const handlersByModule = {
   auth: authHandlers,
   dashboard: dashboardHandlers,
   orders: ordersHandlers,
+  stops: stopsHandlers,
   routes: routesHandlers,
   deliveries: deliveriesHandlers,
   reschedulings: reschedulingsHandlers,

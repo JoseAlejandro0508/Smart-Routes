@@ -77,10 +77,10 @@ VITE_ENABLE_MOCKS=true
 VITE_API_URL=/api
 
 # Opcional: módulos de MSW activos (coma). Vacía/ausente = todos.
-# VITE_MOCKS=auth,orders
+# VITE_MOCKS=auth,orders,stops
 ```
 
-`VITE_MOCKS` permite retirar los mocks módulo a módulo a medida que cada endpoint exista en el backend. Valores disponibles: `auth`, `dashboard`, `orders`, `routes`, `deliveries`, `reschedulings`, `admin`, `reports`. Los módulos que no se listen pasan a la API real. Hay que reiniciar el servidor de desarrollo al cambiarla. Guía de activación por módulo y pruebas manuales: [`src/mocks/README.md`](src/mocks/README.md).
+`VITE_MOCKS` permite retirar los mocks módulo a módulo a medida que cada endpoint exista en el backend. Valores disponibles: `auth`, `dashboard`, `orders`, `stops`, `routes`, `deliveries`, `reschedulings`, `admin`, `reports`. Los módulos que no se listen pasan a la API real. Hay que reiniciar el servidor de desarrollo al cambiarla. Guía de activación por módulo y pruebas manuales: [`src/mocks/README.md`](src/mocks/README.md).
 
 La migración al backend real no requiere cambios de código: basta con desactivar el mock y apuntar `VITE_API_URL` al servidor definitivo (los cambios de entorno requieren reiniciar el servidor de desarrollo).
 

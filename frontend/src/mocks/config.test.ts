@@ -27,6 +27,11 @@ describe('resolveMockModules', () => {
       modules: ['auth', 'orders'],
       unknown: [],
     })
+    expect(resolveMockModules('true', 'stops')).toEqual({
+      enabled: true,
+      modules: ['stops'],
+      unknown: [],
+    })
   })
 
   it('normaliza espacios y mayúsculas e ignora nombres desconocidos', () => {

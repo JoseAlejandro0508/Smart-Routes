@@ -4,8 +4,17 @@ import type { AssignedRoute } from '../api/deliveries.api'
 import type { ReschedulingRequest } from '../api/reschedulings.api'
 import type { AdminUserRole } from '../api/admin.api'
 import type { ReportData, ReportId } from '../api/reports.api'
+import type { Stop } from '../api/stops.api'
 
 export const mockState = {
+  // Paradas registradas
+  stops: [
+    { id: 1, address: 'Calle 23 #456', zoneId: 1, zoneName: 'Centro' },
+    { id: 2, address: 'Avenida 5ta #120', zoneId: 2, zoneName: 'Vedado' },
+    { id: 3, address: 'Calle 12 #78', zoneId: 3, zoneName: 'Plaza' },
+  ] as Stop[],
+  nextStopId: 4,
+
   // Pedidos 
   orders: [
     { id: 1001, description: 'Paquete de repuestos', deliveryType: 'Parcel', priority: 'Urgent', weightKg: 4.5, entryDate: '2026-11-01', deadlineAt: '2026-11-01T14:00:00Z', status: 'Pending', centerName: 'Centro Habana', zoneName: 'Centro', address: 'Calle 23 #456' },

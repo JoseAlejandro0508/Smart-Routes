@@ -17,6 +17,7 @@ import {
   Truck,
   UserCog,
   Warehouse,
+  MapPin,
 } from 'lucide-react'
 import type { User } from '../../api/auth.api'
 
@@ -50,6 +51,7 @@ const SOLO_ADMIN: User['role'][] = ['Administrator']
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio', icon: Home, roles: TODOS },
   { to: '/pedidos', label: 'Pedidos', icon: Package, roles: TODOS },
+  { to: '/paradas', label: 'Paradas', icon: MapPin, roles: ['LogisticsCoordinator', 'Administrator'] },
   { to: '/rutas', label: 'Rutas', icon: Route, roles: TODOS },
   { to: '/reprogramaciones', label: 'Reprogramaciones', icon: RefreshCw, roles: TODOS },
   { to: '/reportes', label: 'Reportes', icon: BarChart3, roles: TODOS },

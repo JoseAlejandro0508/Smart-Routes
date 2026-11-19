@@ -49,8 +49,8 @@ Reglas:
 
 - `VITE_ENABLE_MOCKS=false` (o sin definir) → **no se arranca el worker** y todas
   las peticiones van a la API real, aunque `VITE_MOCKS` tenga módulos.
-- `VITE_ENABLE_MOCKS=true` y `VITE_MOCKS` vacía → se mockean los 8 módulos.
-- `VITE_ENABLE_MOCKS=true` y `VITE_MOCKS=auth,orders` → solo esos dos; el resto
+- `VITE_ENABLE_MOCKS=true` y `VITE_MOCKS` vacía → se mockean los 9 módulos.
+- `VITE_ENABLE_MOCKS=true` y `VITE_MOCKS=auth,orders,stops` → solo esos tres; el resto
   sale a la red.
 - Los nombres se recortan y se pasan a minúsculas (`auth, ORDERS` funciona).
 - Un nombre desconocido se ignora con un `console.warn`.
@@ -70,7 +70,7 @@ cp .env.example .env.development
 ```env
 VITE_API_URL=/api
 VITE_ENABLE_MOCKS=true
-VITE_MOCKS=auth,orders
+VITE_MOCKS=auth,orders,stops
 ```
 
 ### Solo para un comando
@@ -93,6 +93,7 @@ VITE_ENABLE_MOCKS=false npm run dev
 | `auth` | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/2fa/verify`, `POST /api/auth/2fa/resend`, `POST /api/auth/refresh`, `POST /api/auth/forgot`, `POST /api/auth/reset`, `POST /api/auth/change-password`, `GET /api/auth/me` |
 | `dashboard` | `GET /api/dashboard/summary` |
 | `orders` | `GET /api/orders`, `POST /api/orders` |
+| `stops` | `GET /api/stops`, `POST /api/stops`, `PUT /api/stops/:id` |
 | `routes` | `GET /api/routes`, `POST /api/routes/generate`, `POST /api/routes/:id/review` |
 | `deliveries` | `GET /api/delivery/routes`, `POST /api/delivery/routes/:routeId/stops/:orderId` |
 | `reschedulings` | `GET /api/reschedulings`, `POST /api/reschedulings`, `POST /api/reschedulings/:id/resolve` |
@@ -129,7 +130,7 @@ VITE_ENABLE_MOCKS=true npm run dev
 
 Esperado:
 
-- En consola: `[MSW] Módulos simulados: auth, dashboard, orders, routes, deliveries, reschedulings, admin, reports`.
+- En consola: `[MSW] Módulos simulados: auth, dashboard, orders, stops, routes, deliveries, reschedulings, admin, reports`.
 - En **Application → Service workers** aparece `mockServiceWorker.js` como
   `activated and is running`.
 - Se puede iniciar sesión con cualquiera de los cuatro usuarios.
@@ -155,10 +156,10 @@ Esperado:
 ### 3. Varios módulos
 
 ```bash
-VITE_ENABLE_MOCKS=true VITE_MOCKS=auth,orders npm run dev
+VITE_ENABLE_MOCKS=true VITE_MOCKS=auth,orders,stops npm run dev
 ```
 
-Esperado: login y pedidos mockeados; el resto a la red.
+Esperado: login, pedidos y paradas mockeados; el resto a la red.
 
 ### 4. Nombre desconocido y espacios
 

@@ -14,6 +14,7 @@ import { TwoFactorPage } from './pages/auth/TwoFactorPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AppShell } from './components/layout/AppShell'
 import { PedidosPage } from './pages/PedidosPage'
+import { ParadasPage } from './pages/ParadasPage'
 import { RutasPage } from './pages/RutasPage'
 import { ReschedulingsPage } from './pages/ReschedulingsPage'
 import { ReportesPage } from './pages/ReportesPage'
@@ -57,6 +58,9 @@ export default function App() {
                   <Route element={<AppShell />}>
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/pedidos" element={<PedidosPage />} />
+                    <Route element={<RequireRole roles={['LogisticsCoordinator', 'Administrator']} />}>
+                      <Route path="/paradas" element={<ParadasPage />} />
+                    </Route>
                     <Route path="/rutas" element={<RutasPage />} />
                     <Route path="/reprogramaciones" element={<ReschedulingsPage />} />
                     <Route path="/reportes" element={<ReportesPage />} />

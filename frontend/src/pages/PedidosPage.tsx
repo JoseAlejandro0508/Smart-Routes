@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Filter, Package, Plus, Search, X } from 'lucide-react'
 import { ordersApi, type CreateOrderPayload, type DeliveryType, type OrderPriority, type OrderSummary } from '../api/orders.api'
+import { StopSelector } from '../components/ui/StopSelector'
 import { useAuth } from '../features/auth/AuthProvider'
 
 const typeLabels: Record<DeliveryType, string> = { Parcel: 'Paquetería', Documents: 'Documentos', Perishable: 'Perecederos' }
@@ -11,7 +12,7 @@ const statusLabels: Record<OrderSummary['status'], string> = { Pending: 'Pendien
 const initialForm: CreateOrderPayload = {
   description: '', deliveryType: 'Parcel', priority: 'Medium', weightKg: 1,
   entryDate: new Date().toISOString().slice(0, 10), deadlineAt: '', distributionCenterId: 1,
-  stop: { address: '', zoneId: 1 },
+  stop: { address: '', zoneId: 0 },
 }
 
 function PriorityBadge({ priority }: { priority: OrderPriority }) {
@@ -49,8 +50,8 @@ export function PedidosPage() {
 
   function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!form.description.trim() || !form.stop.address.trim() || !form.deadlineAt || form.weightKg <= 0) {
-      setFormError('Completa descripción, dirección, peso y fecha límite.')
+    if (!form.description.trim() || !form.stop.address.trim() || form.stop.zoneId === 0 || !form.deadlineAt || form.weightKg <= 0) {
+      setFormError('Completa descripción, parada, peso y fecha límite.')
       return
     }
     createOrder.mutate(form)
@@ -74,7 +75,7 @@ export function PedidosPage() {
 
       {formOpen && (
         <form onSubmit={submitOrder} className="rounded-2xl border border-neutral-200 bg-white p-5">
-          <div className="mb-5 flex items-center gap-2"><Package className="h-5 w-5 text-neutral-500" /><h2 className="font-semibold text-neutral-900">Registrar pedido y parada</h2></div>
+          <div className="mb-5 flex items-center gap-2"><Package className="h-5 w-5 text-neutral-500" /><h2 className="font-semibold text-neutral-900">Registrar pedido</h2></div>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-medium text-neutral-700 md:col-span-2">Descripción
               <input value={form.description} onChange={(event) => updateForm('description', event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 px-3.5 font-normal shadow-sm outline-none focus:border-neutral-500" placeholder="Ej. Paquete de repuestos" />
@@ -91,14 +92,15 @@ export function PedidosPage() {
             <label className="text-sm font-medium text-neutral-700">Fecha límite
               <input type="datetime-local" value={form.deadlineAt} onChange={(event) => updateForm('deadlineAt', event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 px-3.5 font-normal outline-none focus:border-neutral-500" />
             </label>
-            <label className="text-sm font-medium text-neutral-700 md:col-span-2">Dirección de la parada
-              <input value={form.stop.address} onChange={(event) => setForm((current) => ({ ...current, stop: { ...current.stop, address: event.target.value } }))} className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 px-3.5 font-normal outline-none focus:border-neutral-500" placeholder="Calle, número y referencias" />
-            </label>
             <label className="text-sm font-medium text-neutral-700">Centro de distribución
               <select value={form.distributionCenterId} onChange={(event) => updateForm('distributionCenterId', Number(event.target.value))} className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 bg-white px-3.5 font-normal outline-none focus:border-neutral-500"><option value="1">Centro Habana</option><option value="2">Centro Vedado</option></select>
             </label>
-            <label className="text-sm font-medium text-neutral-700">Zona
-              <select value={form.stop.zoneId} onChange={(event) => setForm((current) => ({ ...current, stop: { ...current.stop, zoneId: Number(event.target.value) } }))} className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 bg-white px-3.5 font-normal outline-none focus:border-neutral-500"><option value="1">Centro</option><option value="2">Vedado</option><option value="3">Plaza</option></select>
+            <label className="text-sm font-medium text-neutral-700 md:col-span-2">Parada
+              <StopSelector
+                value={form.stop}
+                onChange={(selection) => setForm((current) => ({ ...current, stop: selection }))}
+              />
+              <span className="mt-1 block text-xs font-normal text-neutral-500">Selecciona una parada registrada. Si no existe, regístrala en la pantalla de Paradas.</span>
             </label>
           </div>
           {formError && <p role="alert" className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{formError}</p>}

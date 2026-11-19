@@ -6,6 +6,7 @@ export const MOCK_MODULES = [
   'auth',
   'dashboard',
   'orders',
+  'stops',
   'routes',
   'deliveries',
   'reschedulings',
