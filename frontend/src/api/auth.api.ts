@@ -3,14 +3,14 @@ import { http } from './http'
 
 // Tipos del contrato (los mismos que definimos en MSW) 
 
-// Roles REALES del backend (src/Domain/Constants/Roles.cs del repo del
-// equipo). El contrato no inventa nombres: usa los que el .NET enviará.
+/** Roles del dominio soportados por el backend. */
 export type UserRole =
   | 'Administrator'
   | 'LogisticsCoordinator'
   | 'OperationsSupervisor'
   | 'DeliveryPerson'
 
+/** Usuario autenticado devuelto por la API de sesión. */
 export interface User {
   id: string
   name: string
@@ -18,9 +18,10 @@ export interface User {
   role: UserRole
 }
 
-// Guard de runtime: evita que una respuesta que no sea un User (por ejemplo,
-// el index.html que devuelve el dev server para rutas desconocidas) se cuele
-// como sesión válida y reviente al leer sus propiedades.
+/**
+ * Comprueba en runtime que un valor tenga la forma esperada de `User`.
+ * Evita tratar respuestas inválidas (p. ej. HTML del dev server) como sesión válida.
+ */
 export function isUser(value: unknown): value is User {
   if (typeof value !== 'object' || value === null) return false
   const candidate = value as Partial<User>
@@ -43,20 +44,17 @@ interface LoginRequiere2FA {
   challengeToken: string
 }
 
-// "Unión discriminada": el campo literal requiresTwoFactor
-// es la DISCRIMINADORA. TypeScript te obliga a verificarla antes
-// de dejarte tocar accessToken o challengeToken. Adiós, undefined.
+/** Respuesta del inicio de sesión: tokens directos o desafío de segundo factor. */
 export type LoginResponse = LoginTokens | LoginRequiere2FA
 
-
+/** Datos requeridos para registrar una nueva cuenta. */
 export interface RegisterPayload {
   name: string
   email: string
   password: string
 }
 
-// Objeto API: una función por endpoint 
-
+/** Cliente de API para autenticación y gestión de sesión. */
 export const authApi = {
   async login(email: string, password: string): Promise<LoginResponse> {
     const { data } = await http.post('/auth/login', { email, password })

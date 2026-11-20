@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { authApi, isUser, type LoginResponse, type User } from '../../api/auth.api'
 import { tokenStore } from '../../api/http'
 
-// Clave ESTABLE de cache. La sesión vive aquí, no en useState suelto.
+/** Clave de caché de TanStack Query para la sesión autenticada. */
 export const SESSION_KEY = ['auth', 'me'] as const
 
 interface AuthContextValue {
@@ -18,6 +18,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+/** Proveedor de autenticación que mantiene la sesión, tokens y acciones de acceso. */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-// Hook de acceso único a la sesión (Fachada del sistema de auth)
+/** Hook de acceso al contexto de autenticación; debe usarse dentro de `AuthProvider`. */
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth debe usarse dentro de <AuthProvider>')

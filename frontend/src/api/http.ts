@@ -9,6 +9,7 @@ import type { FieldValues, Path, UseFormSetError } from 'react-hook-form'
 const TOKEN_KEY = 'auth.accessToken'
 const REFRESH_KEY = 'auth.refreshToken'
 
+/** Almacén en `localStorage` para los tokens de acceso y refresco de la sesión. */
 export const tokenStore = {
   get access() {
     return localStorage.getItem(TOKEN_KEY)
@@ -28,6 +29,7 @@ export const tokenStore = {
 
 // Instancia configurada
 
+/** Instancia Axios configurada con autenticación Bearer, renovación de tokens y parseo de errores. */
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '/api',
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

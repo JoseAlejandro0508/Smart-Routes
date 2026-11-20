@@ -1,6 +1,7 @@
 import { http } from './http'
 import type { UserRole } from './auth.api'
 
+/** Usuario con el rol asignado, según la vista de administración. */
 export interface AdminUserRole {
   id: string
   name: string
@@ -8,6 +9,7 @@ export interface AdminUserRole {
   role: UserRole | null
 }
 
+/** Cliente de API para la administración de roles de usuario. */
 export const adminApi = {
   async listUserRoles(): Promise<AdminUserRole[]> {
     const { data } = await http.get<AdminUserRole[]>('/admin/getallusersroles')

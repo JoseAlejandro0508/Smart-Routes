@@ -1,12 +1,15 @@
 import { http } from './http'
 
+/** Estado de una ruta dentro del flujo de generación y revisión. */
 export type RouteStatus = 'PendingApproval' | 'Approved' | 'Rejected' | 'InModification'
 
+/** Parámetro aplicado o evaluado para una ruta. */
 export interface RouteParameter {
   label: string
   value: string
 }
 
+/** Resumen de una ruta con sus datos principales. */
 export interface RouteSummary {
   id: number
   creationDate: string
@@ -21,6 +24,7 @@ export interface RouteSummary {
   parameters: RouteParameter[]
 }
 
+/** Datos para solicitar la generación de una ruta. */
 export interface GenerateRoutePayload {
   scheduledDate: string
   vehicleCapacityKg: number
@@ -28,13 +32,16 @@ export interface GenerateRoutePayload {
   orderIds: number[]
 }
 
+/** Decisión posible al revisar una ruta. */
 export type ReviewDecision = 'Approved' | 'Rejected'
 
+/** Datos para registrar la revisión de una ruta. */
 export interface ReviewRoutePayload {
   decision: ReviewDecision
   observations?: string
 }
 
+/** Cliente de API para la gestión de rutas. */
 export const routesApi = {
   async list(): Promise<RouteSummary[]> {
     const { data } = await http.get<RouteSummary[]>('/routes')
