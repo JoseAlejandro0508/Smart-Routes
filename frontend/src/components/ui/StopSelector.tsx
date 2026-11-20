@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { MapPin } from 'lucide-react'
 import { stopsApi, type Stop } from '../../api/stops.api'
 
+/** Dirección y zona de una parada seleccionada. */
 export interface StopSelection {
   address: string
   zoneId: number

@@ -17,6 +17,7 @@ function isNumeric(value: SortableCell | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value)
 }
 
+/** Propiedades del gráfico de barras de reportes. */
 export interface ReportChartProps {
   /** Columnas del reporte, en orden. */
   columns: string[]

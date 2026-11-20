@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthProvider'
 import type { User } from '../api/auth.api'
 
+/** Guarda de ruta que exige una sesión autenticada. */
 export function RequireAuth() {
   const { user, isInitializing } = useAuth()
   const location = useLocation()
@@ -17,6 +18,7 @@ export function RequireAuth() {
   return <Outlet /> // hay sesión → renderiza la ruta hija
 }
 
+/** Guarda de ruta que solo permite el acceso a usuarios sin sesión. */
 export function RequireGuest() {
   const { user, isInitializing } = useAuth()
   if (isInitializing) {
@@ -29,6 +31,7 @@ export function RequireGuest() {
 // Ruta SOLO para ciertos roles. El menú oculta las opciones que no
 // corresponden, pero escribir la URL a mano siempre es posible: la UI
 // se defiende en el ROUTER, no solo en la vista (defensa en profundidad).
+/** Guarda de ruta que exige uno de los roles indicados. */
 export function RequireRole({ roles }: { roles: User['role'][] }) {
   const { user, isInitializing } = useAuth()
   const location = useLocation()

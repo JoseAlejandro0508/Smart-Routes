@@ -1,6 +1,7 @@
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 
+/** Opciones del encabezado y nombre del PDF exportado. */
 export interface ExportPdfOptions {
   /** Título principal del documento. */
   title: string
