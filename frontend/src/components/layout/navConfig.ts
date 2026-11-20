@@ -10,6 +10,7 @@
 // se actualiza solo.
 import {
   BarChart3,
+  Gauge,
   Home,
   Package,
   Route,
@@ -53,6 +54,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/pedidos', label: 'Pedidos', icon: Package, roles: TODOS },
   { to: '/paradas', label: 'Paradas', icon: MapPin, roles: ['LogisticsCoordinator', 'Administrator'] },
   { to: '/rutas', label: 'Rutas', icon: Route, roles: TODOS },
+  { to: '/criterios', label: 'Criterios', icon: Gauge, roles: ['LogisticsCoordinator', 'Administrator'] },
   { to: '/reprogramaciones', label: 'Reprogramaciones', icon: RefreshCw, roles: TODOS },
   { to: '/reportes', label: 'Reportes', icon: BarChart3, roles: TODOS },
   { to: '/repartidores', label: 'Repartidores', icon: Truck, roles: SOLO_ADMIN },

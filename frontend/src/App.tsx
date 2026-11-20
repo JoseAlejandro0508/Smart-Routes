@@ -16,6 +16,7 @@ import { AppShell } from './components/layout/AppShell'
 import { PedidosPage } from './pages/PedidosPage'
 import { ParadasPage } from './pages/ParadasPage'
 import { RutasPage } from './pages/RutasPage'
+import { CriteriosPage } from './pages/CriteriosPage'
 import { ReschedulingsPage } from './pages/ReschedulingsPage'
 import { ReportesPage } from './pages/ReportesPage'
 import { RepartidoresPage } from './pages/RepartidoresPage'
@@ -62,6 +63,9 @@ export default function App() {
                       <Route path="/paradas" element={<ParadasPage />} />
                     </Route>
                     <Route path="/rutas" element={<RutasPage />} />
+                    <Route element={<RequireRole roles={['LogisticsCoordinator', 'Administrator']} />}>
+                      <Route path="/criterios" element={<CriteriosPage />} />
+                    </Route>
                     <Route path="/reprogramaciones" element={<ReschedulingsPage />} />
                     <Route path="/reportes" element={<ReportesPage />} />
                     <Route path="/perfil" element={<ProfilePage />} />
