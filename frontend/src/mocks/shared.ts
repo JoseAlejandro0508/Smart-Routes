@@ -2,7 +2,8 @@ import { delay } from 'msw'
 import { db } from './db'
 
 export function randomDelay() {
-    return delay(300 + Math.random() * 600)
+    // Deliberadamente corto: las pruebas no deben esperar ~1 s por petición.
+    return delay(40 + Math.random() * 80)
 }
 
 export function fakeJwt(userId: string) {

@@ -9,8 +9,6 @@ public class Users : IEndpointGroup
 {
     public static void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapIdentityApi<ApplicationUser>();
-
         groupBuilder.MapPost(Logout, "logout").RequireAuthorization();
     }
 

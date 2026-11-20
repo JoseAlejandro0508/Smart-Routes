@@ -93,4 +93,8 @@ export const authApi = {
     const { data } = await http.get('/auth/me')
     return data
   },
+  async logout(refreshToken?: string | null) {
+    const { data } = await http.post('/auth/logout', { refreshToken })
+    return data
+  },
 }

@@ -65,10 +65,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.setQueryData(SESSION_KEY, await fetchMe())
   }
 
-  function logout() {
-    // TODO (backend real): POST /auth/logout para REVOCAR el refresh
-    // token del lado del servidor. Revocar solo en el cliente deja
-    // el refresh válido en la naturaleza. Para la defensa de tu proyecto.
+  async function logout() {
+    // Revocamos el refresh token en el servidor antes de olvidar la sesión.
+    // Si la red falla, el cliente se cierra igual: la seguridad local manda.
+    try {
+      await authApi.logout(tokenStore.refresh)
+    } catch {
+      // La sesión local se limpia de todos modos.
+    }
+
     tokenStore.clear()
     queryClient.setQueryData(SESSION_KEY, null)
     navigate('/login', { replace: true })
