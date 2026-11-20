@@ -3,7 +3,6 @@
 // No importa handlers a propósito: main.tsx puede usarlo sin arrastrar
 // los mocks al bundle de producción.
 export const MOCK_MODULES = [
-  'auth',
   'dashboard',
   'orders',
   'stops',

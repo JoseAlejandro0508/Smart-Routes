@@ -17,14 +17,14 @@ describe('resolveMockModules', () => {
   })
 
   it('filtra por los módulos solicitados', () => {
-    expect(resolveMockModules('true', 'auth')).toEqual({
+    expect(resolveMockModules('true', 'orders')).toEqual({
       enabled: true,
-      modules: ['auth'],
+      modules: ['orders'],
       unknown: [],
     })
-    expect(resolveMockModules('true', 'auth,orders')).toEqual({
+    expect(resolveMockModules('true', 'dashboard,orders')).toEqual({
       enabled: true,
-      modules: ['auth', 'orders'],
+      modules: ['dashboard', 'orders'],
       unknown: [],
     })
     expect(resolveMockModules('true', 'stops')).toEqual({
@@ -35,9 +35,9 @@ describe('resolveMockModules', () => {
   })
 
   it('normaliza espacios y mayúsculas e ignora nombres desconocidos', () => {
-    expect(resolveMockModules('true', ' auth , ORDERS ,nope ')).toEqual({
+    expect(resolveMockModules('true', ' dashboard , ORDERS ,nope ')).toEqual({
       enabled: true,
-      modules: ['auth', 'orders'],
+      modules: ['dashboard', 'orders'],
       unknown: ['nope'],
     })
   })
@@ -51,12 +51,12 @@ describe('resolveMockModules', () => {
   })
 
   it('respeta el interruptor maestro', () => {
-    expect(resolveMockModules('false', 'auth')).toEqual({
+    expect(resolveMockModules('false', 'orders')).toEqual({
       enabled: false,
       modules: [],
       unknown: [],
     })
-    expect(resolveMockModules(undefined, 'auth')).toEqual({
+    expect(resolveMockModules(undefined, 'orders')).toEqual({
       enabled: false,
       modules: [],
       unknown: [],

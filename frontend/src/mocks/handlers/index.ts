@@ -4,7 +4,6 @@
 import type { RequestHandler } from 'msw'
 import type { MockModule } from '../config'
 import { adminHandlers } from './admin'
-import { authHandlers } from './auth'
 import { dashboardHandlers } from './dashboard'
 import { ordersHandlers } from './orders'
 import { reportsHandlers } from './reports'
@@ -13,7 +12,6 @@ import { stopsHandlers } from './stops'
 
 /** Handlers de MSW agrupados por módulo funcional. */
 export const handlersByModule = {
-  auth: authHandlers,
   dashboard: dashboardHandlers,
   orders: ordersHandlers,
   stops: stopsHandlers,
