@@ -177,6 +177,7 @@ export function getApiFieldErrors(error: unknown): Record<string, string> | null
   return Object.keys(result).length > 0 ? result : null
 }
 
+/** Opciones para aplicar errores de la API a un formulario de react-hook-form. */
 export interface ApplyApiErrorsOptions<T extends FieldValues> {
   /** Si se indica, solo se aplican errores cuyo campo esté en esta lista. */
   fields?: Path<T>[]
