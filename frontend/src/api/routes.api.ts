@@ -1,60 +1,124 @@
 import { http } from './http'
+import type { BalanceCriterion } from './balance-criteria.api'
+import type { DeliveryType, OrderPriority, OrderStatus } from './orders.api'
 
-/** Estado de una ruta dentro del flujo de generación y revisión. */
-export type RouteStatus = 'PendingApproval' | 'Approved' | 'Rejected' | 'InModification'
+/** Decisión de revisión de una ruta. */
+export type ReviewDecision = 'Pending' | 'Approved' | 'Rejected'
 
-/** Parámetro aplicado o evaluado para una ruta. */
-export interface RouteParameter {
-  label: string
-  value: string
-}
-
-/** Resumen de una ruta con sus datos principales. */
-export interface RouteSummary {
+/** Pedido dentro de una ruta, en orden de visita. */
+export interface RouteOrder {
   id: number
-  creationDate: string
-  scheduledDate: string
-  vehicleCapacityKg: number
-  generatorName: string
-  centerName: string
-  status: RouteStatus
-  orderCount: number
-  stopCount: number
-  deliveryPersonName?: string
-  parameters: RouteParameter[]
+  description: string
+  deliveryType: DeliveryType
+  priority: OrderPriority
+  weightKg: number
+  deadlineAt: string
+  status: OrderStatus
+  stopId: number
+  stopAddress: string
 }
 
-/** Datos para solicitar la generación de una ruta. */
+/** Ruta devuelta por el filtro de rutas. */
+export interface Route {
+  id: number
+  scheduledDate: string
+  generatorCoordinatorId: string
+  distributionCenterId: number
+  deliveryPersonId?: string | null
+  balanceCriterionId: number
+  ordersOrdered: RouteOrder[]
+  balanceCriterion?: BalanceCriterion | null
+  created: string
+  /** Estado derivado de la última revisión (cuando está disponible en cliente). */
+}
+
+/** Filtros para consultar rutas. */
+export interface RouteFilters {
+  scheduleBefore?: string
+  scheduleLast?: string
+  id?: number
+  distributionCenterId?: number
+  balanceCriterionId?: number
+  deliveryPersonId?: string
+  logisticCoordiantorId?: string
+  supervisorId?: string
+  withStops?: boolean
+  withBalanceCriterion?: boolean
+  state?: Exclude<ReviewDecision, 'Pending'> | 'Pending'
+}
+
+/** Datos para generar una ruta. */
 export interface GenerateRoutePayload {
   scheduledDate: string
-  vehicleCapacityKg: number
+  deliveryPersonId: string
   distributionCenterId: number
-  orderIds: number[]
+  balanceCriterionId: number
 }
 
-/** Decisión posible al revisar una ruta. */
-export type ReviewDecision = 'Approved' | 'Rejected'
+/** Resultado de la generación de una ruta. */
+export interface GeneratedRoute {
+  routeId: number
+  orders: RouteOrder[]
+}
 
 /** Datos para registrar la revisión de una ruta. */
-export interface ReviewRoutePayload {
+export interface AddReviewPayload {
+  routeId: number
   decision: ReviewDecision
   observations?: string
+  newBalanceCriterionId?: number
 }
 
-/** Cliente de API para la gestión de rutas. */
+/** Coordenadas/parada del mapa de ruta. */
+export interface RouteMapStop {
+  stopId: number
+  address: string
+  latitude?: number | null
+  longitude?: number | null
+  visitOrder: number
+  orders: Array<{
+    id: number
+    description: string
+    priority: OrderPriority
+    deliveryType: DeliveryType
+    weightKg: number
+    deadlineAt: string
+    status: OrderStatus
+  }>
+}
+
+/** Mapa de una ruta con centro, paradas y trazo. */
+export interface RouteMap {
+  routeId: number
+  scheduledDate: string
+  center: { id: number; name: string; latitude?: number | null; longitude?: number | null }
+  stops: RouteMapStop[]
+  path?: { geometry: unknown; distanceMeters: number; durationSeconds: number } | null
+}
+
+/** Cliente de API para rutas de reparto. */
 export const routesApi = {
-  async list(): Promise<RouteSummary[]> {
-    const { data } = await http.get<RouteSummary[]>('/routes')
+  /** Lista rutas aplicando filtros del backend. */
+  async list(filters: RouteFilters = {}): Promise<Route[]> {
+    const params = { withStops: true, withBalanceCriterion: true, ...filters }
+    const { data } = await http.get<Route[]>('/routes/filter', { params })
     return data
   },
 
-  async generate(payload: GenerateRoutePayload): Promise<RouteSummary> {
-    const { data } = await http.post<RouteSummary>('/routes/generate', payload)
+  /** Genera una ruta para un reparto y criterio seleccionados. */
+  async generate(payload: GenerateRoutePayload): Promise<GeneratedRoute> {
+    const { data } = await http.post<GeneratedRoute>('/routes/generate', payload)
     return data
   },
 
-  async review(routeId: number, payload: ReviewRoutePayload): Promise<RouteSummary> {
-    const { data } = await http.post<RouteSummary>(`/routes/${routeId}/review`, payload)
+  /** Registra la revisión de una ruta por el supervisor. */
+  async addReview(payload: AddReviewPayload): Promise<void> {
+    await http.post('/routes/add-review', payload)
+  },
+
+  /** Obtiene el mapa de una ruta. */
+  async getMap(routeId: number): Promise<RouteMap> {
+    const { data } = await http.get<RouteMap>(`/routes/${routeId}/map`)
     return data
   },
 }

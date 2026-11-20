@@ -1,18 +1,24 @@
 // src/mocks/handlers/routes.ts
 // Handlers de generación, consulta y validación de rutas.
 import { http, HttpResponse } from 'msw'
-import type { GenerateRoutePayload, RouteSummary, ReviewRoutePayload } from '../../api/routes.api'
+import type { AddReviewPayload, GenerateRoutePayload } from '../../api/routes.api'
 import { authenticatedUser, randomDelay } from '../shared'
 import { mockState } from '../state'
 
 /** Handlers de rutas: listado, generación y revisión. */
 export const routesHandlers = [
-  // GET /api/routes
-  http.get('/api/routes', async ({ request }) => {
+  // GET /api/routes/filter
+  http.get('/api/routes/filter', async ({ request }) => {
     await randomDelay()
     try {
       authenticatedUser(request)
-      return HttpResponse.json(mockState.routes)
+      const url = new URL(request.url)
+      const state = url.searchParams.get('state')
+      let routes = [...(mockState as any).routes]
+      if (state) {
+        routes = routes.filter((route) => ((mockState as any).routeReviews[route.id] ?? 'Pending') === state)
+      }
+      return HttpResponse.json(routes)
     } catch {
       return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
     }
@@ -27,37 +33,53 @@ export const routesHandlers = [
         return HttpResponse.json({ message: 'Solo un coordinador puede generar rutas' }, { status: 403 })
       }
       const payload = (await request.json()) as GenerateRoutePayload
-      const route: RouteSummary = {
-        id: mockState.nextRouteId++, creationDate: new Date().toISOString(), scheduledDate: payload.scheduledDate,
-        vehicleCapacityKg: payload.vehicleCapacityKg, generatorName: user.name,
-        centerName: payload.distributionCenterId === 2 ? 'Centro Vedado' : 'Centro Habana',
-        status: 'PendingApproval', orderCount: payload.orderIds.length, stopCount: Math.max(1, payload.orderIds.length - 1),
-        parameters: [{ label: 'Pedidos seleccionados', value: `${payload.orderIds.length}` }, { label: 'Capacidad', value: `${payload.vehicleCapacityKg} kg` }, { label: 'Cobertura', value: 'Pendiente de cálculo' }],
+      const id = (mockState as any).nextRouteId++
+      const route = {
+        id,
+        scheduledDate: payload.scheduledDate,
+        generatorCoordinatorId: user.id,
+        distributionCenterId: payload.distributionCenterId,
+        deliveryPersonId: payload.deliveryPersonId,
+        balanceCriterionId: payload.balanceCriterionId,
+        created: new Date().toISOString(),
+        ordersOrdered: [],
+        balanceCriterion: null,
       }
-      mockState.routes.unshift(route)
-      return HttpResponse.json(route, { status: 201 })
+      ;(mockState as any).routes.unshift(route)
+      ;(mockState as any).routeReviews[id] = 'Pending'
+      return HttpResponse.json({ routeId: id, orders: [] }, { status: 201 })
     } catch {
       return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
     }
   }),
 
-  // POST /api/routes/:id/review
-  http.post('/api/routes/:id/review', async ({ request, params }) => {
+  // POST /api/routes/add-review
+  http.post('/api/routes/add-review', async ({ request }) => {
     await randomDelay()
     try {
       const user = authenticatedUser(request)
       if (user.role !== 'OperationsSupervisor') {
         return HttpResponse.json({ message: 'Solo un supervisor puede validar rutas' }, { status: 403 })
       }
-      const route = mockState.routes.find((candidate) => candidate.id === Number(params.id))
+      const payload = (await request.json()) as AddReviewPayload
+      const route = (mockState as any).routes.find((candidate: any) => candidate.id === payload.routeId)
       if (!route) return HttpResponse.json({ message: 'Ruta no encontrada' }, { status: 404 })
-
-      const payload = (await request.json()) as ReviewRoutePayload
       if (payload.decision === 'Rejected' && !payload.observations?.trim()) {
         return HttpResponse.json({ message: 'La observación es obligatoria al rechazar' }, { status: 400 })
       }
-      route.status = payload.decision === 'Approved' ? 'Approved' : 'Rejected'
-      return HttpResponse.json(route)
+      ;(mockState as any).routeReviews[payload.routeId] = payload.decision === 'Approved' ? 'Approved' : 'Rejected'
+      return new HttpResponse(null, { status: 200 })
+    } catch {
+      return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
+    }
+  }),
+
+  // GET /api/routes/:id/map
+  http.get('/api/routes/:id/map', async ({ request, params }) => {
+    await randomDelay()
+    try {
+      authenticatedUser(request)
+      return HttpResponse.json({ routeId: Number(params.id), scheduledDate: new Date().toISOString(), center: { id: 1, name: 'Centro Habana', latitude: null, longitude: null }, stops: [], path: null })
     } catch {
       return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
     }

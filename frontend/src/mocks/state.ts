@@ -1,8 +1,7 @@
 import type { Order } from '../api/orders.api'
-import type { RouteSummary } from '../api/routes.api'
 import type { AssignedRoute } from '../api/deliveries.api'
 import type { ReschedulingRequest } from '../api/reschedulings.api'
-import type { AdminUserRole } from '../api/admin.api'
+import type { AdminUser } from '../api/admin.api'
 import type { ReportData, ReportId } from '../api/reports.api'
 import type { Stop } from '../api/stops.api'
 
@@ -26,22 +25,57 @@ export const mockState = {
   // Rutas
   routes: [
     {
-      id: 201, creationDate: '2026-10-31T16:20:00Z', scheduledDate: '2026-11-01', vehicleCapacityKg: 80,
-      generatorName: 'Ana Demo', centerName: 'Centro Habana', status: 'PendingApproval', orderCount: 18, stopCount: 12,
-      parameters: [{ label: 'Proporción de tipo', value: '40% paquetería / 30% documentos / 30% perecederos' }, { label: 'Cobertura de zonas', value: '4 zonas' }, { label: 'Peso total', value: '62.4 kg' }],
+      id: 201,
+      scheduledDate: '2026-11-01T08:00:00Z',
+      generatorCoordinatorId: 'usr_01',
+      distributionCenterId: 1,
+      deliveryPersonId: 'usr_04',
+      balanceCriterionId: 1,
+      created: '2026-10-31T16:20:00Z',
+      ordersOrdered: [
+        { id: 1001, description: 'Paquete de repuestos', deliveryType: 'Parcel', priority: 'Urgent', weightKg: 4.5, deadlineAt: '2026-11-01T14:00:00Z', status: 'Pending', stopId: 1, stopAddress: 'Calle 23 #456' },
+        { id: 1003, description: 'Productos refrigerados', deliveryType: 'Perishable', priority: 'Urgent', weightKg: 8.2, deadlineAt: '2026-11-01T12:00:00Z', status: 'Pending', stopId: 3, stopAddress: 'Calle 12 #78' },
+      ],
+      balanceCriterion: {
+        id: 1,
+        name: 'Equilibrio base',
+        description: 'Distribución equilibrada de carga y pedidos',
+        authorCoordinatorId: null,
+        isPredefined: true,
+        parameters: [
+          { id: 1, name: 'Máx. pedidos', metric: 'OrderCount', operator: 'LessThanOrEqual', appliedValue: 20, targetDeliveryType: null, balanceCriterionId: 1 },
+          { id: 2, name: 'Peso total', metric: 'TotalWeight', operator: 'LessThanOrEqual', appliedValue: 80, targetDeliveryType: null, balanceCriterionId: 1 },
+        ],
+      },
     },
     {
-      id: 202, creationDate: '2026-10-30T15:05:00Z', scheduledDate: '2026-10-31', vehicleCapacityKg: 100,
-      generatorName: 'Ana Demo', centerName: 'Centro Habana', status: 'Approved', orderCount: 24, stopCount: 15, deliveryPersonName: 'Marco Demo',
-      parameters: [{ label: 'Proporción de tipo', value: '50% paquetería / 25% documentos / 25% perecederos' }, { label: 'Cobertura de zonas', value: '5 zonas' }, { label: 'Peso total', value: '78.1 kg' }],
+      id: 202,
+      scheduledDate: '2026-10-31T08:00:00Z',
+      generatorCoordinatorId: 'usr_01',
+      distributionCenterId: 1,
+      deliveryPersonId: 'usr_04',
+      balanceCriterionId: 1,
+      created: '2026-10-30T15:05:00Z',
+      ordersOrdered: [
+        { id: 1002, description: 'Documentos de contrato', deliveryType: 'Documents', priority: 'Medium', weightKg: 0.3, deadlineAt: '2026-11-01T16:30:00Z', status: 'InRoute', stopId: 2, stopAddress: 'Avenida 5ta #120' },
+      ],
+      balanceCriterion: {
+        id: 1,
+        name: 'Equilibrio base',
+        description: 'Distribución equilibrada de carga y pedidos',
+        authorCoordinatorId: null,
+        isPredefined: true,
+        parameters: [
+          { id: 1, name: 'Máx. pedidos', metric: 'OrderCount', operator: 'LessThanOrEqual', appliedValue: 20, targetDeliveryType: null, balanceCriterionId: 1 },
+        ],
+      },
     },
-    {
-      id: 203, creationDate: '2026-10-29T13:40:00Z', scheduledDate: '2026-10-30', vehicleCapacityKg: 60,
-      generatorName: 'Ana Demo', centerName: 'Centro Vedado', status: 'Rejected', orderCount: 12, stopCount: 9,
-      parameters: [{ label: 'Proporción de tipo', value: '60% paquetería / 20% documentos / 20% perecederos' }, { label: 'Cobertura de zonas', value: '3 zonas' }, { label: 'Peso total', value: '59.7 kg' }],
-    },
-  ] as RouteSummary[],
-  nextRouteId: 204,
+  ] as any[],
+  nextRouteId: 203,
+  routeReviews: {
+    201: 'Pending',
+    202: 'Approved',
+  } as Record<number, 'Pending' | 'Approved' | 'Rejected'>,
 
   // Rutas asignadas al repartidor ────────────────────────────────────
   assignedRoutes: [
@@ -63,11 +97,11 @@ export const mockState = {
 
   // Administración de roles
   adminUsers: [
-    { id: 'usr_01', name: 'Ana Demo', email: 'ana@demo.dev', role: 'LogisticsCoordinator' },
-    { id: 'usr_02', name: 'Carlos Demo', email: 'carlos@demo.dev', role: 'Administrator' },
-    { id: 'usr_03', name: 'Sofía Demo', email: 'sofia@demo.dev', role: 'OperationsSupervisor' },
-    { id: 'usr_04', name: 'Marco Demo', email: 'marco@demo.dev', role: 'DeliveryPerson' },
-  ] as AdminUserRole[],
+    { id: 'usr_01', name: 'Ana Demo', email: 'ana@demo.dev', role: 'LogisticsCoordinator', active: true },
+    { id: 'usr_02', name: 'Carlos Demo', email: 'carlos@demo.dev', role: 'Administrator', active: true },
+    { id: 'usr_03', name: 'Sofía Demo', email: 'sofia@demo.dev', role: 'OperationsSupervisor', active: true },
+    { id: 'usr_04', name: 'Marco Demo', email: 'marco@demo.dev', role: 'DeliveryPerson', active: true },
+  ] as AdminUser[],
 
   // Reportes
   reports: {

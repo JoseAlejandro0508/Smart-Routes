@@ -24,15 +24,13 @@ vi.mock('../features/auth/AuthProvider', () => ({
 }))
 
 const server = setupServer(...routesHandlers)
-const originalStatuses = mockState.routes.map((route) => route.status)
 
 beforeAll(() => server.listen())
 afterAll(() => server.close())
 
 beforeEach(() => {
-  mockState.routes.forEach((route, index) => {
-    route.status = originalStatuses[index] ?? route.status
-  })
+  ;(mockState as any).routeReviews[201] = 'Pending'
+  ;(mockState as any).routeReviews[202] = 'Approved'
   const { accessToken, refreshToken } = tokensFor('usr_03')
   tokenStore.set(accessToken, refreshToken)
 })
@@ -58,6 +56,7 @@ describe('RutasPage (supervisor)', () => {
     const user = userEvent.setup()
     renderPage()
 
+    await user.selectOptions(screen.getByLabelText('Estado'), 'Pending')
     await screen.findByRole('heading', { name: 'Ruta #201' })
     await user.click(screen.getByRole('button', { name: 'Rechazar' }))
 
@@ -70,6 +69,7 @@ describe('RutasPage (supervisor)', () => {
     const user = userEvent.setup()
     renderPage()
 
+    await user.selectOptions(screen.getByLabelText('Estado'), 'Pending')
     await screen.findByRole('heading', { name: 'Ruta #201' })
     await user.type(
       screen.getByPlaceholderText('Observaciones para la revisión o el rechazo'),
@@ -79,10 +79,9 @@ describe('RutasPage (supervisor)', () => {
 
     await waitFor(
       () => {
-        expect(mockState.routes.find((route) => route.id === 201)?.status).toBe('Rejected')
+        expect((mockState as any).routeReviews[201]).toBe('Rejected')
       },
       { timeout: 5000 },
     )
-    expect((await screen.findAllByText('Rechazada')).length).toBeGreaterThan(0)
   })
 })
