@@ -12,6 +12,8 @@ using Smart_Routes.Application.DistributionCenters.Commands.AddLogisticsCoordina
 using Smart_Routes.Application.DistributionCenters.Commands.RemoveLogisticsCoordinators;
 using Smart_Routes.Application.DistributionCenters.Commands.AddDeliveryPersons;
 using Smart_Routes.Application.DistributionCenters.Commands.RemoveDeliveryPersons;
+using Smart_Routes.Application.DistributionCenters.Commands.Update;
+using Smart_Routes.Application.DistributionCenters.Commands.Delete;
 using Smart_Routes.Application.DistributionCenters.Queries.GetAll;
 using Smart_Routes.Application.DistributionCenters.Queries.GetById;
 
@@ -19,7 +21,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class DistributionCenterManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/admin/distribution-center";
+    public static string RoutePrefix => "/api/admin/distribution-center";
 
     public static void Map(RouteGroupBuilder groupBuilder)
     {
@@ -32,6 +34,8 @@ public class DistributionCenterManagement : IEndpointGroup
         groupBuilder.MapGet(GetById, "{id:int}");
 
         groupBuilder.MapPost(CreateDistributionCenter, "create-distribution-center");
+        groupBuilder.MapPut(UpdateDistributionCenter, "{id:int}");
+        groupBuilder.MapDelete(DeleteDistributionCenter, "{id:int}");
 
         groupBuilder.MapPost(AddCoveredZone, "add-covered-zone");
         groupBuilder.MapDelete(RemoveCoveredZones, "remove-covered-zones");
@@ -64,6 +68,33 @@ public class DistributionCenterManagement : IEndpointGroup
     public static async Task<Results<NoContent, BadRequest>> CreateDistributionCenter(ISender sender, CreateCommand request)
     {
         await sender.Send(request);
+        return TypedResults.NoContent();
+    }
+
+    [EndpointSummary("Update a distribution center")]
+    [EndpointDescription("Updates the center data and replaces its covered zones.")]
+    public static async Task<Results<NoContent, BadRequest>> UpdateDistributionCenter(
+        ISender sender,
+        int id,
+        UpdateDistributionCenterBody body)
+    {
+        await sender.Send(new UpdateDistributionCenterCommand
+        {
+            Id = id,
+            Name = body.Name,
+            LogisticProgram = body.LogisticsProgram,
+            Latitude = body.Latitude,
+            Longitude = body.Longitude,
+            CoveredZoneIds = body.CoveredZoneIds ?? new List<int>()
+        });
+        return TypedResults.NoContent();
+    }
+
+    [EndpointSummary("Delete a distribution center")]
+    [EndpointDescription("Deletes a center when it has no orders or routes. Returns 409 otherwise.")]
+    public static async Task<Results<NoContent, BadRequest>> DeleteDistributionCenter(ISender sender, int id)
+    {
+        await sender.Send(new DeleteDistributionCenterCommand(id));
         return TypedResults.NoContent();
     }
 
@@ -115,3 +146,11 @@ public class DistributionCenterManagement : IEndpointGroup
         return TypedResults.NoContent();
     }
 }
+
+/// <summary>Cuerpo de actualización de un centro de distribución.</summary>
+public sealed record UpdateDistributionCenterBody(
+    string Name,
+    string LogisticsProgram,
+    double? Latitude,
+    double? Longitude,
+    IList<int>? CoveredZoneIds);

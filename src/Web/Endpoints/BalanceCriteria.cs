@@ -11,7 +11,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class BalanceCriteriaManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/balance-criteria";
+    public static string RoutePrefix => "/api/balance-criteria";
 
     public static void Map(RouteGroupBuilder groupBuilder)
     {

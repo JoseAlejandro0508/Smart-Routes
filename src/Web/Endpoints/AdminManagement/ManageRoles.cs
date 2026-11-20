@@ -15,7 +15,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class Admin : IEndpointGroup
 {
-    public static  string RoutePrefix => "/admin/manage-roles";
+    public static  string RoutePrefix => "/api/admin/manage-roles";
     public static void Map(RouteGroupBuilder groupBuilder)
     {
         

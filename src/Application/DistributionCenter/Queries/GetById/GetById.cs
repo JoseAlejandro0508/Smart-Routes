@@ -42,6 +42,9 @@ public class GetByIdQueryHandler : IRequestHandler<GetByIdQuery, DistributionCen
         {
             Id = distributionCenter.Id,
             Name = distributionCenter.Name,
+            LogisticsProgram = distributionCenter.LogisticsProgram,
+            Latitude = distributionCenter.Y,
+            Longitude = distributionCenter.X,
             AssignedDeliveryPersons = deliveryPersonsId,
             AuthorizedCoordinators = coordinatorsId,
             CoveredZones = coveredZonesId,

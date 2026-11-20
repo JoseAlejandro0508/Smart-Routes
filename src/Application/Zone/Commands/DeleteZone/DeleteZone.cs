@@ -1,3 +1,4 @@
+using Smart_Routes.Application.Common.Exceptions;
 using Smart_Routes.Application.Common.Interfaces;
 using Smart_Routes.Application.Common.Security;
 using Smart_Routes.Domain.Constants;
@@ -25,6 +26,16 @@ public class DeleteZoneCommandHandler : IRequestHandler<DeleteZoneCommand>
         if (entity == null)
         {
             throw new NotFoundException("Zone not found", request.ZoneId.ToString());
+        }
+
+        if (await _context.Stops.AnyAsync(stop => stop.ZoneId == request.ZoneId, cancellationToken))
+        {
+            throw new ConflictException("No se puede eliminar la zona porque tiene paradas asociadas.");
+        }
+
+        if (await _context.CenterZones.AnyAsync(link => link.ZoneId == request.ZoneId, cancellationToken))
+        {
+            throw new ConflictException("No se puede eliminar la zona porque está asignada a un centro de distribución.");
         }
 
         _context.Zones.Remove(entity);

@@ -12,7 +12,7 @@ namespace Smart_Routes.Web.Endpoints;
 /// <summary>Physical delivery stops: any signed-in user lists them; coordinators and administrators change them.</summary>
 public class StopsManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/stops";
+    public static string RoutePrefix => "/api/stops";
 
     public static void Map(RouteGroupBuilder groupBuilder)
     {
