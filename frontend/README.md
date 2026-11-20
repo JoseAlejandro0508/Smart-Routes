@@ -68,6 +68,16 @@ La aplicación se sirve en `http://localhost:5173`.
 
 Para usar el backend real, desactiva MSW y configura `VITE_API_URL` con la URL del servidor.
 
+### Pruebas y calidad
+
+```bash
+npm test        # Vitest + Testing Library (schemas, guardas, formularios y sesión)
+npm run lint    # oxlint
+npm run build   # TypeScript + build de producción
+```
+
+El flujo de integración continua de `.github/workflows/frontend-ci.yml` ejecuta estas tres comprobaciones en cada PR y en cada push a `develop`.
+
 ### Variables de entorno
 
 Usa `.env.example` como plantilla (git lo ignora — cópialo a `.env.development`):
@@ -254,6 +264,6 @@ El mock vive en memoria. Los cambios de roles, pedidos y rutas no representan pe
 | 🔲 Pendiente | Implementar endpoints de centros y repartidores en el backend |
 | 🔲 Pendiente | Transiciones con Framer Motion |
 | 🔲 Pendiente | Modo oscuro/claro |
-| 🔲 Pendiente | Pruebas unitarias de schemas Zod (Vitest) |
+| ✅ Completado | Pruebas unitarias de schemas Zod, guardas, formularios y renovación de tokens (Vitest) |
 | 🔲 Pendiente | Prueba end-to-end del flujo completo (Playwright) |
 | 🔲 Pendiente | Auditoría Lighthouse |
