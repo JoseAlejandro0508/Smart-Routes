@@ -11,12 +11,14 @@
 import {
   BarChart3,
   Gauge,
+  ClipboardCheck,
   Home,
   Package,
   Route,
   RefreshCw,
   Truck,
   UserCog,
+  Users,
   Warehouse,
   MapPin,
 } from 'lucide-react'
@@ -58,6 +60,8 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/reprogramaciones', label: 'Reprogramaciones', icon: RefreshCw, roles: TODOS },
   { to: '/reportes', label: 'Reportes', icon: BarChart3, roles: TODOS },
   { to: '/repartidores', label: 'Repartidores', icon: Truck, roles: SOLO_ADMIN },
+  { to: '/coordinadores', label: 'Coordinadores', icon: Users, roles: SOLO_ADMIN },
+  { to: '/supervisores', label: 'Supervisores', icon: ClipboardCheck, roles: SOLO_ADMIN },
   { to: '/centros', label: 'Centros', icon: Warehouse, roles: SOLO_ADMIN },
   { to: '/admin', label: 'Administración', icon: UserCog, roles: SOLO_ADMIN },
 ]

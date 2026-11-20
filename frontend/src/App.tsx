@@ -17,6 +17,8 @@ import { PedidosPage } from './pages/PedidosPage'
 import { ParadasPage } from './pages/ParadasPage'
 import { RutasPage } from './pages/RutasPage'
 import { CriteriosPage } from './pages/CriteriosPage'
+import { CoordinadoresPage } from './pages/CoordinadoresPage'
+import { SupervisoresPage } from './pages/SupervisoresPage'
 import { ReschedulingsPage } from './pages/ReschedulingsPage'
 import { ReportesPage } from './pages/ReportesPage'
 import { RepartidoresPage } from './pages/RepartidoresPage'
@@ -71,6 +73,8 @@ export default function App() {
                     <Route path="/perfil" element={<ProfilePage />} />
                     <Route element={<RequireRole roles={['Administrator']} />}>
                       <Route path="/repartidores" element={<RepartidoresPage />} />
+                      <Route path="/coordinadores" element={<CoordinadoresPage />} />
+                      <Route path="/supervisores" element={<SupervisoresPage />} />
                       <Route path="/centros" element={<CentrosPage />} />
                       <Route path="/admin" element={<AdminUsersPage />} />
                     </Route>
