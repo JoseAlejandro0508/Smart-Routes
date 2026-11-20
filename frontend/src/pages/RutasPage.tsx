@@ -17,6 +17,7 @@ function StatusBadge({ status }: { status: RouteStatus }) {
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusTone[status]}`}>{statusLabels[status]}</span>
 }
 
+/** Pantalla de rutas: planificación y revisión, o vista de reparto según el rol. */
 export function RutasPage() {
   const { user } = useAuth()
   if (user?.role === 'DeliveryPerson') return <DeliveryRoutePage />

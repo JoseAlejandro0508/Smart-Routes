@@ -20,6 +20,7 @@ function PriorityBadge({ priority }: { priority: OrderPriority }) {
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{priorityLabels[priority]}</span>
 }
 
+/** Pantalla del banco de pedidos: listado, filtros y alta de pedidos. */
 export function PedidosPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
