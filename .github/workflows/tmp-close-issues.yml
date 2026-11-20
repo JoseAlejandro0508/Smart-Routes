@@ -1,0 +1,20 @@
+name: tmp-close-issues
+on:
+  push:
+    branches: [tmp/close-issues-32-36]
+permissions:
+  issues: write
+  contents: read
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh issue comment 32 --repo JoseAlejandro0508/Smart-Routes --body "Implementado en develop: API y UI de centros/zonas conectadas al backend real (CRUD, cobertura, validaciones). Pendiente validación E2E con entorno completo si aplica."
+          gh issue close 32 --repo JoseAlejandro0508/Smart-Routes --reason completed || true
+          gh issue comment 36 --repo JoseAlejandro0508/Smart-Routes --body "Implementado en develop: pantalla de criterios de equilibrio con listado, creación/eliminación y parámetros (incluye tipo de entrega objetivo para proporción), integrada con API real."
+          gh issue close 36 --repo JoseAlejandro0508/Smart-Routes --reason completed || true
