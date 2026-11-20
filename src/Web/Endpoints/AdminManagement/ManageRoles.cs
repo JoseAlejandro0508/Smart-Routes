@@ -31,7 +31,7 @@ public class Admin : IEndpointGroup
 
         groupBuilder.MapGet(ListUsers, "users").RequireAuthorization(adminOnly);
         groupBuilder.MapGet(ListDeliveryPersons, "delivery-persons").RequireAuthorization(planners);
-        groupBuilder.MapGet(ListCoordinators, "coordinators").RequireAuthorization(adminOnly);
+        groupBuilder.MapGet(ListCoordinators, "coordinators").RequireAuthorization();
         groupBuilder.MapGet(ListSupervisors, "supervisors").RequireAuthorization(adminOnly);
         groupBuilder.MapPut(SetUserRole, "users/{userId}/role").RequireAuthorization(adminOnly);
     }

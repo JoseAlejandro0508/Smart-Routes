@@ -8,8 +8,6 @@ export const MOCK_MODULES = [
   'orders',
   'stops',
   'routes',
-  'deliveries',
-  'reschedulings',
   'admin',
   'reports',
 ] as const

@@ -1,9 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { BarChart3, Download, FileText, Table2 } from 'lucide-react'
+import { BarChart3, Download, FileText, PackageCheck, Table2 } from 'lucide-react'
+import { deliveriesApi } from '../api/deliveries.api'
 import { reportsApi, type ReportId } from '../api/reports.api'
 import { ReportChart } from '../components/ui/ReportChart'
 import { SortableTable, type SortableRow } from '../components/ui/SortableTable'
+import { useAuth } from '../features/auth/AuthProvider'
 import { exportElementToPdf } from '../utils/exportPdf'
 
 const reportOptions: Array<{ id: ReportId; label: string }> = [
@@ -17,6 +19,7 @@ const reportOptions: Array<{ id: ReportId; label: string }> = [
 
 /** Página de reportes operativos con vista en tabla/gráfico y exportación a PDF. */
 export function ReportesPage() {
+  const { user } = useAuth()
   const [reportId, setReportId] = useState<ReportId>('generated-routes')
   const [view, setView] = useState<'table' | 'chart'>('table')
   const [sortedRows, setSortedRows] = useState<SortableRow[]>([])
@@ -24,6 +27,12 @@ export function ReportesPage() {
   const exportRef = useRef<HTMLDivElement>(null)
 
   const report = useQuery({ queryKey: ['report', reportId], queryFn: () => reportsApi.get(reportId) })
+  const canViewDeliveryReports = user?.role === 'Administrator' || user?.role === 'OperationsSupervisor' || user?.role === 'LogisticsCoordinator'
+  const deliveryReports = useQuery({
+    queryKey: ['delivery-reports-by-center'],
+    queryFn: deliveriesApi.getReportsByCenter,
+    enabled: canViewDeliveryReports,
+  })
   const currentOption = reportOptions.find((option) => option.id === reportId)
 
   const rows = useMemo<SortableRow[]>(
@@ -67,6 +76,50 @@ export function ReportesPage() {
           </button>
         )}
       </header>
+
+      {canViewDeliveryReports && (
+        <section className="rounded-2xl border border-neutral-200 bg-white p-5">
+          <div className="flex items-center gap-2">
+            <PackageCheck className="h-5 w-5 text-neutral-500" />
+            <h2 className="font-semibold text-neutral-900">Entregas por centro</h2>
+          </div>
+          <p className="mt-1 text-sm text-neutral-500">Resumen real de entregas registradas en rutas aprobadas.</p>
+          {deliveryReports.isPending ? (
+            <p className="mt-4 text-sm text-neutral-500">Cargando entregas por centro…</p>
+          ) : deliveryReports.isError ? (
+            <p className="mt-4 text-sm text-rose-700">No se pudieron cargar los reportes de entrega por centro.</p>
+          ) : (deliveryReports.data ?? []).length === 0 ? (
+            <p className="mt-4 text-sm text-neutral-500">No hay datos de entregas disponibles.</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-200 text-left text-neutral-500">
+                    <th className="px-3 py-2 font-medium">Centro</th>
+                    <th className="px-3 py-2 font-medium">Rutas aprobadas</th>
+                    <th className="px-3 py-2 font-medium">Paradas</th>
+                    <th className="px-3 py-2 font-medium">Exitosas</th>
+                    <th className="px-3 py-2 font-medium">Fallidas</th>
+                    <th className="px-3 py-2 font-medium">Pendientes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(deliveryReports.data ?? []).map((item) => (
+                    <tr key={item.distributionCenterId} className="border-b border-neutral-100">
+                      <td className="px-3 py-2 font-medium text-neutral-900">{item.centerName}</td>
+                      <td className="px-3 py-2">{item.approvedRoutes}</td>
+                      <td className="px-3 py-2">{item.totalStops}</td>
+                      <td className="px-3 py-2 text-emerald-700">{item.successfulDeliveries}</td>
+                      <td className="px-3 py-2 text-rose-700">{item.failedDeliveries}</td>
+                      <td className="px-3 py-2 text-amber-700">{item.pendingDeliveries}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="flex flex-wrap items-end gap-4">
         <label className="block w-full max-w-xl text-sm font-medium text-neutral-700">

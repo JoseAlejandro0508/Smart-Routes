@@ -6,10 +6,8 @@ import type { MockModule } from '../config'
 import { adminHandlers } from './admin'
 import { authHandlers } from './auth'
 import { dashboardHandlers } from './dashboard'
-import { deliveriesHandlers } from './deliveries'
 import { ordersHandlers } from './orders'
 import { reportsHandlers } from './reports'
-import { reschedulingsHandlers } from './reschedulings'
 import { routesHandlers } from './routes'
 import { stopsHandlers } from './stops'
 
@@ -20,8 +18,6 @@ export const handlersByModule = {
   orders: ordersHandlers,
   stops: stopsHandlers,
   routes: routesHandlers,
-  deliveries: deliveriesHandlers,
-  reschedulings: reschedulingsHandlers,
   admin: adminHandlers,
   reports: reportsHandlers,
 } satisfies Record<MockModule, RequestHandler[]>

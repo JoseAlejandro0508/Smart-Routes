@@ -1,4 +1,5 @@
 import { http } from './http'
+import type { OrderPriority } from './orders.api'
 
 /** Resultado posible del intento de entrega de un pedido. */
 export type DeliveryResult = 'Pending' | 'Successful' | 'Failed'
@@ -9,7 +10,7 @@ export interface AssignedStop {
   description: string
   address: string
   zoneName: string
-  priority: 'Low' | 'Medium' | 'Urgent'
+  priority: OrderPriority
   result: DeliveryResult
   observations?: string
 }
@@ -28,7 +29,18 @@ export interface RecordDeliveryPayload {
   observations?: string
 }
 
-/** Cliente de API para la operación de entregas del repartidor. */
+/** Reporte agregado de entregas por centro. */
+export interface DeliveryCenterReport {
+  distributionCenterId: number
+  centerName: string
+  approvedRoutes: number
+  totalStops: number
+  successfulDeliveries: number
+  failedDeliveries: number
+  pendingDeliveries: number
+}
+
+/** Cliente de API para la operación de entregas. */
 export const deliveriesApi = {
   async listAssignedRoutes(): Promise<AssignedRoute[]> {
     const { data } = await http.get<AssignedRoute[]>('/delivery/routes')
@@ -37,6 +49,11 @@ export const deliveriesApi = {
 
   async record(routeId: number, orderId: number, payload: RecordDeliveryPayload): Promise<AssignedStop> {
     const { data } = await http.post<AssignedStop>(`/delivery/routes/${routeId}/stops/${orderId}`, payload)
+    return data
+  },
+
+  async getReportsByCenter(): Promise<DeliveryCenterReport[]> {
+    const { data } = await http.get<DeliveryCenterReport[]>('/delivery/reports/by-center')
     return data
   },
 }

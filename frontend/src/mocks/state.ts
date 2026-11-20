@@ -1,6 +1,4 @@
 import type { Order } from '../api/orders.api'
-import type { AssignedRoute } from '../api/deliveries.api'
-import type { ReschedulingRequest } from '../api/reschedulings.api'
 import type { AdminUser } from '../api/admin.api'
 import type { ReportData, ReportId } from '../api/reports.api'
 import type { Stop } from '../api/stops.api'
@@ -77,23 +75,6 @@ export const mockState = {
     202: 'Approved',
   } as Record<number, 'Pending' | 'Approved' | 'Rejected'>,
 
-  // Rutas asignadas al repartidor ────────────────────────────────────
-  assignedRoutes: [
-    {
-      routeId: 202,
-      scheduledDate: '2026-10-31',
-      centerName: 'Centro Habana',
-      stops: [
-        { orderId: 1001, description: 'Paquete de repuestos', address: 'Calle 23 #456', zoneName: 'Centro', priority: 'Urgent', result: 'Pending' },
-        { orderId: 1002, description: 'Documentos de contrato', address: 'Avenida 5ta #120', zoneName: 'Vedado', priority: 'Medium', result: 'Successful', observations: 'Recibido en recepción' },
-        { orderId: 1003, description: 'Productos refrigerados', address: 'Calle 12 #78', zoneName: 'Plaza', priority: 'Urgent', result: 'Pending' },
-      ],
-    },
-  ] as AssignedRoute[],
-
-  // Reprogramaciones
-  reschedulings: [] as ReschedulingRequest[],
-  nextReschedulingId: 1,
 
   // Administración de roles
   adminUsers: [
