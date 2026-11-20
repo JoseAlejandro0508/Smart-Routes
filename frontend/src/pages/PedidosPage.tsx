@@ -90,7 +90,14 @@ export function PedidosPage() {
       setFormError('')
       setFormOpen(false)
     },
-    onError: (error) => setFormError(getApiErrorMessage(error, 'No se pudo registrar el pedido.')),
+    onError: (error) => {
+      const status = (error as { response?: { status?: number } } | undefined)?.response?.status
+      if (status === 409) {
+        setFormError('Ya existe un pedido con datos equivalentes en el mismo centro. Revisa la información sin perder lo escrito.')
+        return
+      }
+      setFormError(getApiErrorMessage(error, 'No se pudo registrar el pedido.'))
+    },
   })
 
   const filteredOrders = useMemo(() => {
@@ -371,6 +378,7 @@ export function PedidosPage() {
                     <th className="px-4 py-3 font-medium">Prioridad</th>
                     <th className="px-4 py-3 font-medium">Estado</th>
                     <th className="px-4 py-3 text-right font-medium">Límite</th>
+                    {user?.role === 'LogisticsCoordinator' && <th className="px-4 py-3 text-right font-medium">Clasificación</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
@@ -390,6 +398,18 @@ export function PedidosPage() {
                       <td className="px-4 py-4 text-right text-neutral-600">
                         {new Date(order.deadlineAt).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </td>
+                      {user?.role === 'LogisticsCoordinator' && (
+                        <td className="px-4 py-4 text-right">
+                          <button
+                            type="button"
+                            disabled
+                            title="Pendiente de endpoint backend de clasificación y validación de propiedad del pedido"
+                            className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-500 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Clasificar
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -16,6 +16,7 @@ export function CoordinadoresPage() {
   const [actionError, setActionError] = useState('')
   const coordinators = useQuery({ queryKey: ['coordinators'], queryFn: adminApi.listCoordinators })
   const centers = useQuery({ queryKey: ['centers'], queryFn: centersApi.list })
+  const centerNameById = useMemo(() => new Map((centers.data ?? []).map((center) => [center.id, center.name])), [centers.data])
 
   const form = useForm<CoordinatorFormValues>({
     resolver: zodResolver(coordinatorSchema),
@@ -62,7 +63,7 @@ export function CoordinadoresPage() {
       <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
         <div className="border-b border-neutral-200 px-5 py-4"><h2 className="flex items-center gap-2 font-semibold text-neutral-900"><UserCog className="h-4 w-4" /> Coordinadores registrados</h2></div>
         {coordinators.isPending ? <p className="p-8 text-center text-sm text-neutral-500">Cargando coordinadores…</p> : coordinators.isError ? <p className="p-8 text-center text-sm text-rose-600">No se pudieron cargar los coordinadores.</p> : (coordinators.data ?? []).length === 0 ? <p className="p-8 text-center text-sm text-neutral-500">No hay coordinadores registrados.</p> : (
-          <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500"><tr><th className="px-5 py-3 font-medium">Coordinador</th><th className="px-5 py-3 font-medium">Especialidad</th><th className="px-5 py-3 font-medium">Centros autorizados</th></tr></thead><tbody className="divide-y divide-neutral-100">{(coordinators.data ?? []).map((c) => <tr key={c.id}><td className="px-5 py-4"><p className="font-medium text-neutral-900">{c.name}</p><p className="mt-1 text-xs text-neutral-500">{c.email}</p></td><td className="px-5 py-4 text-neutral-700">{c.specialty}</td><td className="px-5 py-4 text-neutral-500">{c.authorizedCenterIds.length ? c.authorizedCenterIds.join(', ') : '—'}</td></tr>)}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500"><tr><th className="px-5 py-3 font-medium">Coordinador</th><th className="px-5 py-3 font-medium">Especialidad</th><th className="px-5 py-3 font-medium">Centros autorizados</th></tr></thead><tbody className="divide-y divide-neutral-100">{(coordinators.data ?? []).map((c) => <tr key={c.id}><td className="px-5 py-4"><p className="font-medium text-neutral-900">{c.name}</p><p className="mt-1 text-xs text-neutral-500">{c.email}</p></td><td className="px-5 py-4 text-neutral-700">{c.specialty}</td><td className="px-5 py-4 text-neutral-500">{c.authorizedCenterIds.length ? c.authorizedCenterIds.map((id) => centerNameById.get(id) ?? `Centro #${id}`).join(', ') : '—'}</td></tr>)}</tbody></table></div>
         )}
       </section>
     </div>

@@ -1,10 +1,12 @@
 // src/pages/DashboardPage.tsx
 // Home de la zona privada: resumen operativo adaptado al rol autenticado.
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Activity, CheckCircle2, ClipboardList, Clock3, RefreshCw } from 'lucide-react'
 import { dashboardApi } from '../api/dashboard.api'
 import { useAuth } from '../features/auth/AuthProvider'
 import { ROLE_LABELS } from '../components/layout/navConfig'
+import type { UserRole } from '../api/auth.api'
 
 const KPI_ITEMS = [
   { key: 'totalOrders', label: 'Pedidos registrados', icon: ClipboardList, tone: 'bg-blue-50 text-blue-700' },
@@ -12,6 +14,13 @@ const KPI_ITEMS = [
   { key: 'pendingDeliveries', label: 'Entregas pendientes', icon: Clock3, tone: 'bg-rose-50 text-rose-700' },
   { key: 'completedDeliveries', label: 'Entregas completadas', icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-700' },
 ] as const
+
+const VISIBLE_KPIS_BY_ROLE: Record<UserRole, Array<(typeof KPI_ITEMS)[number]['key']>> = {
+  Administrator: ['totalOrders', 'activeRoutes', 'pendingDeliveries', 'completedDeliveries'],
+  LogisticsCoordinator: ['totalOrders', 'activeRoutes', 'pendingDeliveries', 'completedDeliveries'],
+  OperationsSupervisor: ['activeRoutes', 'pendingDeliveries', 'completedDeliveries'],
+  DeliveryPerson: ['activeRoutes', 'pendingDeliveries', 'completedDeliveries'],
+}
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -22,6 +31,10 @@ export function DashboardPage() {
   })
 
   const firstName = user?.name?.split(' ')[0] ?? user?.email
+  const visibleItems = useMemo(() => {
+    const allowed = user ? VISIBLE_KPIS_BY_ROLE[user.role] : KPI_ITEMS.map((item) => item.key)
+    return KPI_ITEMS.filter((item) => allowed.includes(item.key))
+  }, [user])
 
   return (
     <div className="space-y-6">
@@ -35,7 +48,7 @@ export function DashboardPage() {
       </header>
 
       <section aria-label="Indicadores principales" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {KPI_ITEMS.map(({ key, label, icon: Icon, tone }) => (
+        {visibleItems.map(({ key, label, icon: Icon, tone }) => (
           <div key={key} className="rounded-2xl border border-neutral-200 bg-white p-5">
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm font-medium text-neutral-500">{label}</p>

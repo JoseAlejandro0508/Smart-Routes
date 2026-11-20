@@ -17,6 +17,8 @@ export interface DeliveryPersonSummary {
   name: string
   dateOfBirth: string
   fleet: string
+  distributionCenterIds?: number[]
+  centerNames?: string[]
 }
 
 /** Coordinador logístico registrado. */

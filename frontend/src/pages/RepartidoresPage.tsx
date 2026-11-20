@@ -110,16 +110,19 @@ export function RepartidoresPage() {
         {deliveryPersons.isPending ? <p className="p-8 text-center text-sm text-neutral-500">Cargando repartidores…</p> : deliveryPersons.isError ? <p className="p-8 text-center text-sm text-rose-600">No se pudieron cargar los repartidores.</p> : (deliveryPersons.data ?? []).length === 0 ? <p className="p-8 text-center text-sm text-neutral-500">No hay repartidores registrados.</p> : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left text-sm">
-              <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500"><tr><th className="px-5 py-3 font-medium">Repartidor</th><th className="px-5 py-3 font-medium">Edad</th><th className="px-5 py-3 font-medium">Flota</th><th className="px-5 py-3 font-medium">Nacimiento</th></tr></thead>
+              <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500"><tr><th className="px-5 py-3 font-medium">Repartidor</th><th className="px-5 py-3 font-medium">Edad</th><th className="px-5 py-3 font-medium">Flota</th><th className="px-5 py-3 font-medium">Centros</th><th className="px-5 py-3 font-medium">Nacimiento</th></tr></thead>
               <tbody className="divide-y divide-neutral-100">
-                {(deliveryPersons.data ?? []).map((person) => (
+                {(deliveryPersons.data ?? []).map((person) => {
+                  const centersLabel = person.centerNames?.length ? person.centerNames.join(', ') : person.distributionCenterIds?.length ? person.distributionCenterIds.map((id) => `Centro #${id}`).join(', ') : 'Pendiente (backend)'
+                  return (
                   <tr key={person.id}>
                     <td className="px-5 py-4"><p className="font-medium text-neutral-900">{person.name}</p><p className="mt-1 text-xs text-neutral-500">{person.email}</p></td>
                     <td className="px-5 py-4 text-neutral-700">{ageFromBirthDay(person.dateOfBirth) ?? '—'}</td>
                     <td className="px-5 py-4 text-neutral-700">{person.fleet}</td>
+                    <td className="px-5 py-4 text-neutral-500">{centersLabel}</td>
                     <td className="px-5 py-4 text-neutral-500">{person.dateOfBirth}</td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>

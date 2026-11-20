@@ -26,12 +26,14 @@ export function ReportesPage() {
   const [exporting, setExporting] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
 
+  const [filters, setFilters] = useState<Record<string, string>>({})
   const report = useQuery({ queryKey: ['report', reportId], queryFn: () => reportsApi.get(reportId) })
   const canViewDeliveryReports = user?.role === 'Administrator' || user?.role === 'OperationsSupervisor' || user?.role === 'LogisticsCoordinator'
   const deliveryReports = useQuery({
     queryKey: ['delivery-reports-by-center'],
     queryFn: deliveriesApi.getReportsByCenter,
     enabled: canViewDeliveryReports,
+    refetchInterval: 30_000,
   })
   const currentOption = reportOptions.find((option) => option.id === reportId)
 
@@ -39,6 +41,18 @@ export function ReportesPage() {
     () => (report.data?.rows ?? []) as SortableRow[],
     [report.data],
   )
+
+  const displayedRows = useMemo(() => {
+    let result = rows
+    const zone = filters.zone?.trim().toLowerCase()
+    const priority = filters.priority?.trim().toLowerCase()
+    const center = filters.center?.trim().toLowerCase()
+    if (zone) result = result.filter((r) => String(r['Zona'] ?? r['zona'] ?? '').toLowerCase().includes(zone))
+    if (priority) result = result.filter((r) => String(r['Prioridad'] ?? r['prioridad'] ?? '').toLowerCase().includes(priority))
+    if (center) result = result.filter((r) => String(r['Centro'] ?? r['centro'] ?? '').toLowerCase().includes(center))
+    if (reportId === 'priority-correlation') result = result.slice(0, 10)
+    return result
+  }, [rows, filters, reportId])
 
   async function handleExport() {
     if (!report.data || !exportRef.current) return
@@ -164,6 +178,21 @@ export function ReportesPage() {
         )}
       </div>
 
+      {report.data && (
+        <div className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:grid-cols-3">
+          <label className="text-sm font-medium text-neutral-700">Filtro por centro
+            <input value={filters.center ?? ''} onChange={(e) => setFilters((f) => ({ ...f, center: e.target.value }))} placeholder="Ej. Centro Habana" className="mt-1.5 h-10 w-full rounded-lg border border-neutral-200 px-3 font-normal outline-none focus:border-neutral-500" />
+          </label>
+          <label className="text-sm font-medium text-neutral-700">Filtro por zona
+            <input value={filters.zone ?? ''} onChange={(e) => setFilters((f) => ({ ...f, zone: e.target.value }))} placeholder="Ej. Centro" className="mt-1.5 h-10 w-full rounded-lg border border-neutral-200 px-3 font-normal outline-none focus:border-neutral-500" />
+          </label>
+          <label className="text-sm font-medium text-neutral-700">Filtro por prioridad
+            <input value={filters.priority ?? ''} onChange={(e) => setFilters((f) => ({ ...f, priority: e.target.value }))} placeholder="Ej. Urgente" className="mt-1.5 h-10 w-full rounded-lg border border-neutral-200 px-3 font-normal outline-none focus:border-neutral-500" />
+          </label>
+          <p className="text-xs text-neutral-500 sm:col-span-3">Filtros de vista frontend; los filtros específicos por endpoint/reportes reales quedan pendientes de backend cuando aplique.</p>
+        </div>
+      )}
+
       {report.isPending ? (
         <div className="rounded-2xl border border-neutral-200 bg-white p-10 text-center text-sm text-neutral-500">
           Generando reporte…
@@ -197,18 +226,19 @@ export function ReportesPage() {
               <p className="mb-4 text-xs font-medium uppercase tracking-wide text-neutral-400">
                 Resumen visual
               </p>
-              <ReportChart columns={report.data.columns} rows={sortedRows.length ? sortedRows : rows} title={report.data.title} />
+              <ReportChart columns={report.data.columns} rows={sortedRows.length ? sortedRows : displayedRows} title={report.data.title} />
+              {reportId === 'priority-correlation' && <p className="mt-3 text-xs text-neutral-500">Vista limitada a top 10 registros cuando aplica (frontend).</p>}
             </section>
           ) : (
             <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
               <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-                <p className="text-sm text-neutral-500">{(sortedRows.length || rows.length)} filas</p>
+                <p className="text-sm text-neutral-500">{(sortedRows.length || displayedRows.length)} filas</p>
                 <FileText className="h-5 w-5 text-neutral-400" />
               </div>
               <SortableTable
-                key={reportId}
+                key={`${reportId}-${JSON.stringify(filters)}`}
                 columns={report.data.columns}
-                rows={rows}
+                rows={displayedRows}
                 onRowsChange={setSortedRows}
               />
             </section>

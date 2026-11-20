@@ -68,6 +68,14 @@ function RoutePlanningPage() {
     queryFn: () => routesApi.list(stateFilter === 'all' ? {} : { state: stateFilter }),
   })
 
+  const list = routes.data ?? []
+  const selectedRoute: Route | undefined = list.find((route) => route.id === selectedId) ?? list[0]
+  const routeMap = useQuery({
+    queryKey: ['route-map', selectedRoute?.id],
+    queryFn: () => routesApi.getMap(selectedRoute!.id),
+    enabled: Boolean(selectedRoute?.id),
+  })
+
   const centers = useQuery({ queryKey: ['centers'], queryFn: centersApi.list })
   const criteria = useQuery({ queryKey: ['balance-criteria'], queryFn: balanceCriteriaApi.list })
   const deliveryPersons = useQuery({
@@ -98,8 +106,6 @@ function RoutePlanningPage() {
     onError: (error) => setReviewError(getApiErrorMessage(error, 'No se pudo registrar la revisión.')),
   })
 
-  const list = routes.data ?? []
-  const selectedRoute: Route | undefined = list.find((route) => route.id === selectedId) ?? list[0]
   const selectedState: Exclude<ViewState, 'all'> = stateFilter === 'all' ? 'Pending' : stateFilter
 
   const selectedCriterion = useMemo(
@@ -255,6 +261,22 @@ function RoutePlanningPage() {
                     </div>
                   ))}
                 </div>
+
+                <h3 className="mt-6 text-sm font-semibold text-neutral-900">Mapa y recorrido</h3>
+                {routeMap.isPending ? (
+                  <p className="mt-2 text-sm text-neutral-500">Cargando mapa de la ruta…</p>
+                ) : routeMap.isError ? (
+                  <p className="mt-2 text-sm text-neutral-500">Mapa no disponible (pendiente de datos/endpoint backend o sin geometría).</p>
+                ) : routeMap.data ? (
+                  <div className="mt-2 space-y-2 rounded-xl bg-neutral-50 p-3 text-sm text-neutral-700">
+                    <p><span className="font-medium">Centro:</span> {routeMap.data.center.name}</p>
+                    <p><span className="font-medium">Paradas:</span> {routeMap.data.stops.length}</p>
+                    {routeMap.data.path ? <p><span className="font-medium">Recorrido:</span> {Math.round(routeMap.data.path.distanceMeters)} m · {Math.round(routeMap.data.path.durationSeconds / 60)} min</p> : <p className="text-neutral-500">Sin geometría de ruta disponible.</p>}
+                    {routeMap.data.stops.slice(0, 5).map((stop) => <p key={stop.stopId} className="text-xs text-neutral-500">#{stop.visitOrder} {stop.address} {stop.latitude != null && stop.longitude != null ? `(${stop.latitude}, ${stop.longitude})` : ''}</p>)}
+                    {routeMap.data.stops.length > 5 && <p className="text-xs text-neutral-500">… y {routeMap.data.stops.length - 5} paradas más.</p>}
+                    <p className="text-xs text-neutral-500">Visualización cartográfica completa pendiente de integración de mapa (frontend/backend según datos disponibles).</p>
+                  </div>
+                ) : null}
 
                 {user?.role === 'OperationsSupervisor' && (stateFilter === 'Pending' || selectedState === 'Pending') && (
                   <div className="mt-6 border-t border-neutral-200 pt-5">
