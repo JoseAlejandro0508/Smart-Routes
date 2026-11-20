@@ -8,9 +8,11 @@ const emptyForm: StopPayload = { address: '', zoneId: 1 }
 /** Pantalla de gestión de paradas: listado, filtro por zona y alta/edición. */
 export function ParadasPage() {
   const queryClient = useQueryClient()
-  const stops = useQuery({ queryKey: ['stops'], queryFn: stopsApi.list })
-
   const [zoneFilter, setZoneFilter] = useState<'all' | number>('all')
+  const stops = useQuery({
+    queryKey: ['stops', zoneFilter],
+    queryFn: () => stopsApi.list(zoneFilter === 'all' ? undefined : zoneFilter),
+  })
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Stop | null>(null)
   const [form, setForm] = useState<StopPayload>(emptyForm)
@@ -26,11 +28,7 @@ export function ParadasPage() {
     onError: () => setFormError('No se pudo guardar la parada. Intenta de nuevo.'),
   })
 
-  const filteredStops = useMemo(
-    () =>
-      (stops.data ?? []).filter((stop) => zoneFilter === 'all' || stop.zoneId === zoneFilter),
-    [stops.data, zoneFilter],
-  )
+  const filteredStops = useMemo(() => stops.data ?? [], [stops.data])
 
   function openCreate() {
     setEditing(null)

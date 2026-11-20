@@ -13,19 +13,23 @@ function canManageStops(role: string) {
 
 /** Handlers de paradas: listado, alta y edición. */
 export const stopsHandlers = [
-  // GET /api/stops
+  // GET /api/stops?zoneId=
   http.get('/api/stops', async ({ request }) => {
     await randomDelay()
     try {
       authenticatedUser(request)
-      return HttpResponse.json(mockState.stops)
+      const zoneId = new URL(request.url).searchParams.get('zoneId')
+      const stops = zoneId
+        ? mockState.stops.filter((stop) => stop.zoneId === Number(zoneId))
+        : mockState.stops
+      return HttpResponse.json(stops)
     } catch {
       return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
     }
   }),
 
-  // POST /api/stops
-  http.post('/api/stops', async ({ request }) => {
+  // POST /api/stops/create-stop
+  http.post('/api/stops/create-stop', async ({ request }) => {
     await randomDelay()
     try {
       const user = authenticatedUser(request)
@@ -41,6 +45,8 @@ export const stopsHandlers = [
         address: payload.address.trim(),
         zoneId: payload.zoneId,
         zoneName: ZONE_NAMES[payload.zoneId],
+        latitude: payload.latitude ?? null,
+        longitude: payload.longitude ?? null,
       }
       mockState.stops.unshift(stop)
       return HttpResponse.json(stop, { status: 201 })

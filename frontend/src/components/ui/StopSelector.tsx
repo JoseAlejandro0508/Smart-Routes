@@ -24,7 +24,7 @@ export interface StopSelectorProps {
  * permite elegir una para reutilizar su dirección y zona (p. ej. al crear un pedido).
  */
 export function StopSelector({ value, onChange, id, disabled }: StopSelectorProps) {
-  const stops = useQuery({ queryKey: ['stops'], queryFn: stopsApi.list })
+  const stops = useQuery({ queryKey: ['stops'], queryFn: () => stopsApi.list() })
 
   const selectedId = stops.data?.find(
     (stop) => stop.address === value.address && stop.zoneId === value.zoneId,
