@@ -25,6 +25,9 @@ public class Admin : IEndpointGroup
         groupBuilder.MapPost(CreateDeliveryPerson, "create-delivery-person").RequireAuthorization(adminOnly);
         groupBuilder.MapPost(CreateOperationsSupervisor, "create-operations-supervisor").RequireAuthorization(adminOnly);
         groupBuilder.MapPost(CreateLogisticsCordinator, "create-logistics-cordinator").RequireAuthorization(adminOnly);
+        groupBuilder.MapPost(CreateDeliveryPersonFull, "create-delivery-person-full").RequireAuthorization(adminOnly);
+        groupBuilder.MapPost(CreateCoordinatorFull, "create-coordinator-full").RequireAuthorization(adminOnly);
+        groupBuilder.MapPost(CreateSupervisorFull, "create-supervisor-full").RequireAuthorization(adminOnly);
 
         groupBuilder.MapGet(ListUsers, "users").RequireAuthorization(adminOnly);
         groupBuilder.MapGet(ListDeliveryPersons, "delivery-persons").RequireAuthorization(planners);
@@ -174,6 +177,152 @@ public class Admin : IEndpointGroup
         var full = $"{user.FirstName} {user.LastName}".Trim();
         return string.IsNullOrWhiteSpace(full) ? (user.Email ?? user.UserName ?? user.Id) : full;
     }
+
+    [EndpointSummary("Create delivery person with user account")]
+    public static async Task<Results<Created<string>, BadRequest<string>>> CreateDeliveryPersonFull(
+        ISender sender,
+        UserManager<ApplicationUser> userManager,
+        IApplicationDbContext context,
+        [FromBody] CreateDeliveryPersonFullRequest request)
+    {
+        var (user, error) = await CreateUserAsync(userManager, request.Email, request.Password, request.FirstName, request.LastName);
+        if (error is not null || user is null) return TypedResults.BadRequest(error ?? "No se pudo crear el usuario.");
+
+        try
+        {
+            await sender.Send(new CreateDeliveryPersonCommand
+            {
+                UserId = user.Id,
+                BirthDay = request.BirthDay,
+                Fleet = request.Fleet,
+            });
+
+            foreach (var centerId in request.DistributionCenterIds.Distinct())
+            {
+                context.DeliveryPersonCenters.Add(new Smart_Routes.Domain.Entities.DeliveryPersonCenter
+                {
+                    DeliveryPersonId = user.Id,
+                    DistributionCenterId = centerId,
+                });
+            }
+
+            if (request.DistributionCenterIds.Count > 0)
+            {
+                await context.SaveChangesAsync(CancellationToken.None);
+            }
+
+            return TypedResults.Created($"/api/admin/manage-roles/delivery-persons/{user.Id}", user.Id);
+        }
+        catch (Exception ex)
+        {
+            await userManager.DeleteAsync(user);
+            return TypedResults.BadRequest(ex.Message);
+        }
+    }
+
+    [EndpointSummary("Create logistics coordinator with user account")]
+    public static async Task<Results<Created<string>, BadRequest<string>>> CreateCoordinatorFull(
+        ISender sender,
+        UserManager<ApplicationUser> userManager,
+        IApplicationDbContext context,
+        [FromBody] CreateCoordinatorFullRequest request)
+    {
+        var (user, error) = await CreateUserAsync(userManager, request.Email, request.Password, request.FirstName, request.LastName);
+        if (error is not null || user is null) return TypedResults.BadRequest(error ?? "No se pudo crear el usuario.");
+
+        try
+        {
+            await sender.Send(new CreateLogisticCordinatorCommand
+            {
+                UserId = user.Id,
+                Speciality = request.Specialty,
+            });
+
+            foreach (var centerId in request.AuthorizedCenterIds.Distinct())
+            {
+                context.CoordinatorCenters.Add(new Smart_Routes.Domain.Entities.CoordinatorCenter
+                {
+                    CoordinatorId = user.Id,
+                    DistributionCenterId = centerId,
+                });
+            }
+
+            if (request.AuthorizedCenterIds.Count > 0)
+            {
+                await context.SaveChangesAsync(CancellationToken.None);
+            }
+
+            return TypedResults.Created($"/api/admin/manage-roles/coordinators/{user.Id}", user.Id);
+        }
+        catch (Exception ex)
+        {
+            await userManager.DeleteAsync(user);
+            return TypedResults.BadRequest(ex.Message);
+        }
+    }
+
+    [EndpointSummary("Create operations supervisor with user account")]
+    public static async Task<Results<Created<string>, BadRequest<string>>> CreateSupervisorFull(
+        ISender sender,
+        UserManager<ApplicationUser> userManager,
+        [FromBody] CreateSupervisorFullRequest request)
+    {
+        var (user, error) = await CreateUserAsync(userManager, request.Email, request.Password, request.FirstName, request.LastName);
+        if (error is not null || user is null) return TypedResults.BadRequest(error ?? "No se pudo crear el usuario.");
+
+        try
+        {
+            await sender.Send(new CreateOperationsSupervisorCommand
+            {
+                UserId = user.Id,
+                ControlArea = request.ControlArea,
+            });
+
+            return TypedResults.Created($"/api/admin/manage-roles/supervisors/{user.Id}", user.Id);
+        }
+        catch (Exception ex)
+        {
+            await userManager.DeleteAsync(user);
+            return TypedResults.BadRequest(ex.Message);
+        }
+    }
+
+    private static async Task<(ApplicationUser? User, string? Error)> CreateUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string email,
+        string password,
+        string? firstName,
+        string? lastName)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            return (null, "Email y contraseña son obligatorios.");
+        }
+
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            return (null, "Ya existe un usuario con ese correo.");
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
+            Active = true,
+            EmailConfirmed = true,
+        };
+
+        var result = await userManager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+            return (null, string.Join("; ", result.Errors.Select(e => e.Description)));
+        }
+
+        return (user, null);
+    }
 }
 
 public sealed record UserWithRoleDto(string Id, string Email, string Name, string Role, bool Active);
@@ -181,3 +330,28 @@ public sealed record DeliveryPersonDto(string Id, string Email, string Name, Dat
 public sealed record CoordinatorDto(string Id, string Email, string Name, string Specialty, List<int> AuthorizedCenterIds);
 public sealed record SupervisorDto(string Id, string Email, string Name, string ControlArea);
 public sealed record SetUserRoleRequest(string Role);
+
+
+public sealed record CreateDeliveryPersonFullRequest(
+    string Email,
+    string Password,
+    string? FirstName,
+    string? LastName,
+    DateOnly BirthDay,
+    string Fleet,
+    List<int> DistributionCenterIds);
+
+public sealed record CreateCoordinatorFullRequest(
+    string Email,
+    string Password,
+    string? FirstName,
+    string? LastName,
+    string Specialty,
+    List<int> AuthorizedCenterIds);
+
+public sealed record CreateSupervisorFullRequest(
+    string Email,
+    string Password,
+    string? FirstName,
+    string? LastName,
+    string ControlArea);
