@@ -61,7 +61,7 @@ describe('PedidosPage', () => {
     await user.click(screen.getByRole('button', { name: 'Registrar pedido' }))
 
     expect(
-      screen.getByText('Completa descripción, parada, peso y fecha límite.'),
+      screen.getByText('Completa descripción, parada, peso, fecha de ingreso y fecha límite.'),
     ).toBeInTheDocument()
   })
 

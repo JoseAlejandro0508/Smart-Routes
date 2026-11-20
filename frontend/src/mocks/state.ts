@@ -1,4 +1,4 @@
-import type { OrderSummary } from '../api/orders.api'
+import type { Order } from '../api/orders.api'
 import type { RouteSummary } from '../api/routes.api'
 import type { AssignedRoute } from '../api/deliveries.api'
 import type { ReschedulingRequest } from '../api/reschedulings.api'
@@ -17,10 +17,10 @@ export const mockState = {
 
   // Pedidos 
   orders: [
-    { id: 1001, description: 'Paquete de repuestos', deliveryType: 'Parcel', priority: 'Urgent', weightKg: 4.5, entryDate: '2026-11-01', deadlineAt: '2026-11-01T14:00:00Z', status: 'Pending', centerName: 'Centro Habana', zoneName: 'Centro', address: 'Calle 23 #456' },
-    { id: 1002, description: 'Documentos de contrato', deliveryType: 'Documents', priority: 'Medium', weightKg: 0.3, entryDate: '2026-11-01', deadlineAt: '2026-11-01T16:30:00Z', status: 'InRoute', centerName: 'Centro Habana', zoneName: 'Vedado', address: 'Avenida 5ta #120' },
-    { id: 1003, description: 'Productos refrigerados', deliveryType: 'Perishable', priority: 'Urgent', weightKg: 8.2, entryDate: '2026-11-01', deadlineAt: '2026-11-01T12:00:00Z', status: 'Pending', centerName: 'Centro Habana', zoneName: 'Plaza', address: 'Calle 12 #78' },
-  ] as OrderSummary[],
+    { id: 1001, description: 'Paquete de repuestos', deliveryType: 'Parcel', priority: 'Urgent', weightKg: 4.5, entryDate: '2026-11-01', deadlineAt: '2026-11-01T14:00:00Z', status: 'Pending', distributionCenterId: 1, stopId: 1, centerName: 'Centro Habana', zoneName: 'Centro', address: 'Calle 23 #456' },
+    { id: 1002, description: 'Documentos de contrato', deliveryType: 'Documents', priority: 'Medium', weightKg: 0.3, entryDate: '2026-11-01', deadlineAt: '2026-11-01T16:30:00Z', status: 'InRoute', distributionCenterId: 1, stopId: 2, centerName: 'Centro Habana', zoneName: 'Vedado', address: 'Avenida 5ta #120' },
+    { id: 1003, description: 'Productos refrigerados', deliveryType: 'Perishable', priority: 'Urgent', weightKg: 8.2, entryDate: '2026-11-01', deadlineAt: '2026-11-01T12:00:00Z', status: 'Pending', distributionCenterId: 1, stopId: 3, centerName: 'Centro Habana', zoneName: 'Plaza', address: 'Calle 12 #78' },
+  ] as Order[],
   nextOrderId: 1004,
 
   // Rutas

@@ -7,8 +7,8 @@ export type OrderPriority = 'Low' | 'Medium' | 'Urgent'
 /** Estado actual de un pedido en el flujo logístico. */
 export type OrderStatus = 'Pending' | 'InRoute' | 'Delivered' | 'Returned'
 
-/** Resumen de un pedido para listados y detalle. */
-export interface OrderSummary {
+/** Pedido devuelto por la API. */
+export interface Order {
   id: number
   description: string
   deliveryType: DeliveryType
@@ -17,9 +17,30 @@ export interface OrderSummary {
   entryDate: string
   deadlineAt: string
   status: OrderStatus
+  distributionCenterId: number
+  stopId: number
   centerName: string
   zoneName: string
   address: string
+}
+
+/** Página de pedidos paginada. */
+export interface OrdersPage {
+  items: Order[]
+  pageNumber: number
+  pageSize: number
+  totalCount: number
+}
+
+/** Filtros y paginación para listar pedidos. */
+export interface ListOrdersParams {
+  distributionCenterId?: number
+  zoneId?: number
+  deliveryType?: DeliveryType
+  priority?: OrderPriority
+  status?: OrderStatus
+  pageNumber?: number
+  pageSize?: number
 }
 
 /** Datos necesarios para registrar un nuevo pedido. */
@@ -31,7 +52,8 @@ export interface CreateOrderPayload {
   entryDate: string
   deadlineAt: string
   distributionCenterId: number
-  stop: {
+  stopId?: number
+  stop?: {
     address: string
     zoneId: number
   }
@@ -39,13 +61,15 @@ export interface CreateOrderPayload {
 
 /** Cliente de API para la gestión de pedidos. */
 export const ordersApi = {
-  async list(): Promise<OrderSummary[]> {
-    const { data } = await http.get<OrderSummary[]>('/orders')
+  /** Lista pedidos aplicando filtros y paginación del backend. */
+  async list(params: ListOrdersParams = {}): Promise<OrdersPage> {
+    const { data } = await http.get<OrdersPage>('/orders', { params })
     return data
   },
 
-  async create(payload: CreateOrderPayload): Promise<OrderSummary> {
-    const { data } = await http.post<OrderSummary>('/orders', payload)
+  /** Registra un pedido y devuelve su identificador. */
+  async create(payload: CreateOrderPayload): Promise<number> {
+    const { data } = await http.post<number>('/orders', payload)
     return data
   },
 }
