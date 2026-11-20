@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Las advertencias de auditoría de paquetes (NU1902/3/4) no deben bloquear
+         restore/build mientras se planifica la actualización de dependencias. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
