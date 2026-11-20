@@ -1,0 +1,44 @@
+name: tmp-issue-progress-31
+on:
+  push:
+    branches: [develop]
+    paths:
+      - '.github/workflows/tmp-issue-progress-31.yml'
+permissions:
+  issues: write
+  contents: read
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = 31;
+            const body = `<!-- plan-instrucciones-v1 -->
+## Objetivo
+Desactivar el mock en autenticación y dejar preparada la migración del resto módulo a módulo.
+
+## Qué hay que implementar
+- [x] Permitir activar MSW por módulo, para ir retirando los handlers a medida que exista cada endpoint.
+- [x] Conectar login, refresh, \`me\`, logout y cambio de contraseña con la API real.
+- [x] Adaptar \`frontend/src/api/http.ts\` al formato de error \`ProblemDetails\` del backend y mostrar los errores de validación por campo.
+- [x] Mostrar el menú y proteger las rutas según el rol real.
+- [x] Retirar del front los flujos que se descarten en la decisión de la tarea de backend.
+
+## Criterios de aceptación
+- [ ] Los cuatro roles entran con usuarios del seeder y ven solo su menú.
+- [ ] Con la sesión caducada, el refresh ocurre sin que el usuario lo note.
+
+## Depende de
+#27, #30
+
+## Referencias
+\`frontend/src/features/auth/AuthProvider.tsx\`, \`frontend/src/routes/guards.tsx\`.
+
+## Antes de cerrar
+PR hacia \`develop\`, JSDoc en lo exportado, pruebas de la lógica nueva y sin handlers de MSW para lo ya conectado.`;
+            await github.rest.issues.update({ owner, repo, issue_number, body });
+            await github.rest.issues.createComment({ owner, repo, issue_number, body: "Progreso automático: sesión frontend conectada a endpoints reales (/auth/login, refresh, me, logout, change-password) con manejo de refresh/errores y UI de cambio de contraseña en perfil; retirados handlers MSW de auth. Pendiente verificación integrada con seeder/SQL Server (4 roles y refresh transparente en sesión caducada)." });
