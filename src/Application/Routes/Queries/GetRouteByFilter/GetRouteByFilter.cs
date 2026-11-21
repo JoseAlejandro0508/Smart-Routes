@@ -20,8 +20,10 @@ public record GetRouteByFilter : IRequest<IList<RouteDto>>
     public string? DeliveryPersonId { get; init; }
     public string? LogisticCoordiantorId { get; init; }
     public string? SupervisorId { get; init; }
-    public bool WithStops { get; init; } = true;
-    public bool WithBalanceCriterion { get; init; } = true;
+    // Nullable so they are optional query parameters: with [AsParameters] a non-nullable bool is required
+    // in the URL even with a default value. Missing means true.
+    public bool? WithStops { get; init; }
+    public bool? WithBalanceCriterion { get; init; }
     public ReviewDecision? State{get;init;}
 }
 
@@ -75,7 +77,10 @@ public class GetRouteByFilterHandler : IRequestHandler<GetRouteByFilter, IList<R
             query = query.Where(r => r.ScheduledDate >= request.ScheduleLast.Value);
         }
 
-        if (request.WithStops)
+        var withStops = request.WithStops ?? true;
+        var withBalanceCriterion = request.WithBalanceCriterion ?? true;
+
+        if (withStops)
         {
             query = query
                 .Include(r => r.RouteOrders)
@@ -85,7 +90,7 @@ public class GetRouteByFilterHandler : IRequestHandler<GetRouteByFilter, IList<R
                     .ThenInclude(rs => rs.Stop);
         }
 
-        if (request.WithBalanceCriterion)
+        if (withBalanceCriterion)
         {
             query = query
                 .Include(r => r.BalanceCriterion)
@@ -126,7 +131,7 @@ public class GetRouteByFilterHandler : IRequestHandler<GetRouteByFilter, IList<R
                 Created=route.Created,
             };
 
-            if (request.WithStops)
+            if (withStops)
             {
                 var orderedStops = route.RouteStops
                     .OrderBy(rs => rs.VisitOrder)
@@ -148,7 +153,7 @@ public class GetRouteByFilterHandler : IRequestHandler<GetRouteByFilter, IList<R
                 routeDto.OrdersOrdered = orderedOrders;
             }
 
-            if (request.WithBalanceCriterion && route.BalanceCriterion is not null)
+            if (withBalanceCriterion && route.BalanceCriterion is not null)
             {
                 routeDto.BalanceCriterion = new BalanceCriterionWithParametersDto
                 {

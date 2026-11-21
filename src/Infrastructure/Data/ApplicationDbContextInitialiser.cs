@@ -269,6 +269,8 @@ public class ApplicationDbContextInitialiser
         foreach (var order in orders)
         {
             route.RouteOrders.Add(new RouteOrder { OrderId = order.Id });
+            // An order inside a route is no longer pending, so the generator does not take it again.
+            order.Status = OrderStatus.InRoute;
         }
         route.RouteStops.Add(new RouteStop { StopId = stopCentro.Id, VisitOrder = 1 });
         route.RouteStops.Add(new RouteStop { StopId = stopVedado.Id, VisitOrder = 2 });
@@ -283,6 +285,7 @@ public class ApplicationDbContextInitialiser
             Result = DeliveryResult.Successful,
             Observations = "Recibido en recepción"
         };
+        orders[1].Status = OrderStatus.Delivered;
 
         route.Reviews.Add(new Review
         {
