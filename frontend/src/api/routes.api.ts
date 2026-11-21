@@ -93,7 +93,8 @@ export interface RouteMap {
   scheduledDate: string
   center: { id: number; name: string; latitude?: number | null; longitude?: number | null }
   stops: RouteMapStop[]
-  path?: { geometry: unknown; distanceMeters: number; durationSeconds: number } | null
+  /** Trazado por calles: pares [latitud, longitud] listos para Leaflet; `estimated` si es una estimación en línea recta. */
+  path?: { latLngs: [number, number][]; distanceMeters: number; durationSeconds: number; source: 'osrm' | 'estimated' } | null
 }
 
 /** Cliente de API para rutas de reparto. */
