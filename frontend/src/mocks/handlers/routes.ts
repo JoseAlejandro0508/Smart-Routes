@@ -79,7 +79,30 @@ export const routesHandlers = [
     await randomDelay()
     try {
       authenticatedUser(request)
-      return HttpResponse.json({ routeId: Number(params.id), scheduledDate: new Date().toISOString(), center: { id: 1, name: 'Centro Habana', latitude: null, longitude: null }, stops: [], path: null })
+      // Puntos reales de La Habana; el backend real calcula el trazado por calles con OSRM.
+      const center = { latitude: 23.132, longitude: -82.374 }
+      const places = [
+        { address: 'Calle 12 #78', latitude: 23.125, longitude: -82.395, priority: 'Urgent' },
+        { address: 'Avenida 5ta #120', latitude: 23.128, longitude: -82.389, priority: 'Medium' },
+        { address: 'Calle 23 #456', latitude: 23.136, longitude: -82.381, priority: 'Low' },
+      ] as const
+      const stops = places.map((place, index) => ({
+        stopId: index + 1,
+        address: place.address,
+        zoneId: index + 1,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        visitOrder: index + 1,
+        orders: [{ id: Number(params.id) * 100 + index, description: `Pedido ${index + 1}`, priority: place.priority, deliveryType: 'Parcel', weightKg: 2 + index, deadlineAt: new Date().toISOString(), status: 'InRoute' }],
+      }))
+      const latLngs: [number, number][] = [[center.latitude, center.longitude], ...places.map((p) => [p.latitude, p.longitude] as [number, number]), [center.latitude, center.longitude]]
+      return HttpResponse.json({
+        routeId: Number(params.id),
+        scheduledDate: new Date().toISOString(),
+        center: { id: 1, name: 'Centro Habana', ...center },
+        stops,
+        path: { latLngs, distanceMeters: 8700, durationSeconds: 1080, source: 'estimated' },
+      })
     } catch {
       return HttpResponse.json({ message: 'No autorizado' }, { status: 401 })
     }
