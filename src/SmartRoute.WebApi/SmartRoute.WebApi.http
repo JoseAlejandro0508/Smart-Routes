@@ -1,0 +1,6 @@
+@SmartRoute.WebApi_HostAddress = http://localhost:5071
+
+GET {{SmartRoute.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
