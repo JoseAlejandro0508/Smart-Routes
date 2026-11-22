@@ -169,7 +169,16 @@ public sealed class RouteGenerator : IRouteGenerator
             .Where(o => o.DistributionCenterId == route.DistributionCenterId &&
                         o.Status == OrderStatus.Pending &&
                         o.DeadlineAt >= scheduledDayStart &&
-                        coveredZoneIds.Contains(o.Stop.ZoneId))
+                        coveredZoneIds.Contains(o.Stop.ZoneId) &&
+                        // Already delivered in some route.
+                        !o.RouteOrders.Any(ro => ro.DeliveryRecord != null && ro.DeliveryRecord.Result == DeliveryResult.Successful) &&
+                        // Single current order (3.2): not in another active route, that is, a route without reviews
+                        // or whose latest review is not a rejection, where it has no delivery record yet.
+                        !o.RouteOrders.Any(ro =>
+                            ro.RouteId != route.Id &&
+                            ro.DeliveryRecord == null &&
+                            (!ro.Route.Reviews.Any() ||
+                             ro.Route.Reviews.OrderByDescending(r => r.Created).First().Decision != ReviewDecision.Rejected)))
             .Select(o => new RouteCandidate(
                 o.Id,
                 o.StopId,

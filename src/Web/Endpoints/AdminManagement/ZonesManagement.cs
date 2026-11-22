@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Smart_Routes.Application.Zones.Commands.CreateZone;
 using Smart_Routes.Application.Zones.Commands.DeleteZone;
+using Smart_Routes.Application.Zones.Commands.UpdateZone;
 using Smart_Routes.Application.Zones.Queries.GetZones;
 using Smart_Routes.Domain.Constants;
 
@@ -10,7 +11,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class ZonesManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/admin/zones";
+    public static string RoutePrefix => "/api/admin/zones";
 
     public static void Map(RouteGroupBuilder groupBuilder)
     {
@@ -21,6 +22,7 @@ public class ZonesManagement : IEndpointGroup
 
         groupBuilder.MapGet(GetZones, "get-all");
         groupBuilder.MapPost(CreateZone, "create-zone");
+        groupBuilder.MapPut(UpdateZone, "{zoneId:int}");
         groupBuilder.MapDelete(DeleteZone, "{zoneId:int}");
     }
 
@@ -40,6 +42,14 @@ public class ZonesManagement : IEndpointGroup
         return TypedResults.NoContent();
     }
 
+    [EndpointSummary("Update a zone")]
+    [EndpointDescription("Renames a zone by its identifier.")]
+    public static async Task<Results<NoContent, BadRequest>> UpdateZone(ISender sender, int zoneId, UpdateZoneBody body)
+    {
+        await sender.Send(new UpdateZoneCommand { ZoneId = zoneId, Name = body.Name });
+        return TypedResults.NoContent();
+    }
+
     [EndpointSummary("Delete a zone")]
     [EndpointDescription("Deletes a zone by its identifier.")]
     public static async Task<Results<NoContent, BadRequest>> DeleteZone(ISender sender, int zoneId)
@@ -48,3 +58,6 @@ public class ZonesManagement : IEndpointGroup
         return TypedResults.NoContent();
     }
 }
+
+/// <summary>Cuerpo de actualización de una zona.</summary>
+public sealed record UpdateZoneBody(string Name);

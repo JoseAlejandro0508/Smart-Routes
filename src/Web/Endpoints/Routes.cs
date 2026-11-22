@@ -13,7 +13,7 @@ namespace Smart_Routes.Web.Endpoints;
 
 public class RoutesManagement : IEndpointGroup
 {
-    public static string RoutePrefix => "/routes";
+    public static string RoutePrefix => "/api/routes";
 
     public static void Map(RouteGroupBuilder groupBuilder)
     {

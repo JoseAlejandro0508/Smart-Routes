@@ -1,7 +1,12 @@
+using System.Text;
+using System.Text.Json.Serialization;
 using Azure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Smart_Routes.Application.Common.Interfaces;
 using Smart_Routes.Infrastructure.Data;
 using Smart_Routes.Infrastructure.Identity;
+using Smart_Routes.Web.Auth;
 using Smart_Routes.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +37,42 @@ public static class DependencyInjection
             options.AddOperationTransformer<IdentityApiOperationTransformer>();
         });
 
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
         builder.Services.AddCors();
+
+        // JWT: el frontend guarda access/refresh tokens y los envía como Bearer.
+        builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+        builder.Services.AddSingleton<RefreshTokenStore>();
+        builder.Services.AddSingleton<PasswordResetTokenStore>();
+        builder.Services.AddScoped<TokenService>();
+
+        var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+        builder.Services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwt.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwt.Audience,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromSeconds(30),
+                    NameClaimType = System.Security.Claims.ClaimTypes.Name,
+                    RoleClaimType = System.Security.Claims.ClaimTypes.Role
+                };
+            });
     }
 
     public static void AddKeyVaultIfConfigured(this IHostApplicationBuilder builder)
