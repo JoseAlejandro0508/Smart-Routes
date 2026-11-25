@@ -4,7 +4,7 @@
 
 - **Rama:** `develop`
 - **Fecha de creación:** 25/11/2026
-- **Progreso:** 2 / 33
+- **Progreso:** 3 / 33
 - **Fuente de verdad del contrato:** `docs/endpoints.md`
 
 ## Leyenda
@@ -28,7 +28,7 @@
 - ✅ 19 pantallas/vistas implementadas.
 - ✅ CI de frontend con lint, test y build.
 - ✅ 51 pruebas pasando.
-- ❌ MSW de runtime todavía activo; con JWT real devuelve 401 porque busca IDs `usr_01`, `usr_02`…
+- ✅ MSW de runtime eliminado; la app arranca directo contra el backend real.
 - ❌ Dashboard y reportes sin endpoint de backend.
 - ❌ Contratos de pedidos, rutas, paradas y centros desalineados.
 - ❌ Documentación y README de mocks desactualizados.
@@ -82,6 +82,7 @@
 
 ## 3. Eliminar los mocks de ejecución 🟢
 
+- [x] **Completada:** 25/11/2026. `main.tsx` renderiza directo, `src/mocks/` y el service worker fueron eliminados.
 - `src/main.tsx`: render directo, sin `enableMocking`, `resolveMockModules` ni import dinámico.
 - Borrar `frontend/src/mocks/` completa.
 - Borrar `frontend/public/mockServiceWorker.js`.
