@@ -4,7 +4,7 @@
 
 - **Rama:** `develop`
 - **Fecha de creación:** 25/11/2026
-- **Progreso:** 3 / 33
+- **Progreso:** 4 / 33
 - **Fuente de verdad del contrato:** `docs/endpoints.md`
 
 ## Leyenda
@@ -31,7 +31,7 @@
 - ✅ MSW de runtime eliminado; la app arranca directo contra el backend real.
 - ❌ Dashboard y reportes sin endpoint de backend.
 - ❌ Contratos de pedidos, rutas, paradas y centros desalineados.
-- ❌ Documentación y README de mocks desactualizados.
+- ✅ Documentación y README alineados con el backend real.
 
 ## Decisiones abiertas
 
@@ -93,6 +93,7 @@
 
 ## 4. Limpiar documentación y comentarios 🟢
 
+- [x] **Completada:** 25/11/2026. README reescrito contra el backend real y comentarios de `auth.api.ts`, `http.ts`, `orders.api.ts` y `TwoFactorPage` actualizados.
 - `frontend/README.md`: quitar la sección de MSW, las variables de entorno, los usuarios mock y la tabla antigua de endpoints.
 - Enlazar `docs/endpoints.md` y describir el estado real.
 - Actualizar comentarios como “los mismos que definimos en MSW” en `src/api/auth.api.ts`.

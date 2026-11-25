@@ -66,9 +66,9 @@ export const ordersApi = {
     const response = await http.get<Order[] | OrdersPage>('/orders', { params })
     const { data, headers } = response
 
-    // El backend real devuelve un array y los totales en cabeceras. Se mantiene
-    // también la forma paginada anterior para no romper mientras se elimina el
-    // mock de ejecución (tarea 3).
+    // El backend real devuelve un array y los totales en cabeceras. Se acepta
+    // también una respuesta paginada por compatibilidad con versiones previas
+    // del contrato.
     if (!Array.isArray(data)) return data
 
     const numericHeader = (name: string) => {

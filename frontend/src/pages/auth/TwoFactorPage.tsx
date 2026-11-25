@@ -116,8 +116,7 @@ export function TwoFactorPage() {
           Verificación en dos pasos
         </h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Introduce el código de 6 dígitos. En esta demo, míralo en la consola
-          del navegador (<code className="text-neutral-700">📱 [MOCK]</code>).
+          Introduce el código de 6 dígitos de tu aplicación de autenticación.
         </p>
       </header>
 

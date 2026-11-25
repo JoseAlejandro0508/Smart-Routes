@@ -1,7 +1,7 @@
 // src/api/auth.api.ts
 import { http } from './http'
 
-// Tipos del contrato (los mismos que definimos en MSW) 
+// Tipos del contrato del backend (ver docs/endpoints.md).
 
 /** Roles del dominio soportados por el backend. */
 export type UserRole =

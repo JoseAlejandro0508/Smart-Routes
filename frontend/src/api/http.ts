@@ -105,9 +105,9 @@ http.interceptors.response.use(
 )
 
 /**
- * Cuerpo de error que puede devolver la API. Soporta el formato actual del mock
- * (`message`) y el formato RFC 7807 / ProblemDetails del backend .NET
- * (`title`, `detail`, `errors` en ValidationProblemDetails).
+ * Cuerpo de error que puede devolver la API. Soporta el formato RFC 7807 /
+ * ProblemDetails del backend .NET (`title`, `detail`, `errors` en
+ * ValidationProblemDetails) y un `message` simple.
  */
 export interface ProblemDetails {
   type?: string
@@ -117,7 +117,7 @@ export interface ProblemDetails {
   instance?: string
   /** Errores de validación por campo (ValidationProblemDetails). */
   errors?: Record<string, string[] | string | undefined>
-  /** Mensaje simple usado por el mock actual. */
+  /** Mensaje simple alternativo al `ProblemDetails`. */
   message?: string
 }
 
@@ -137,7 +137,7 @@ function normalizeFieldName(name: string): string {
 
 /**
  * Devuelve un mensaje legible para mostrar al usuario a partir de un error de API.
- * Prefiere `message` (mock), luego `detail` y `title` (ProblemDetails).
+ * Prefiere `message`, luego `detail` y `title` (ProblemDetails).
  */
 export function getApiErrorMessage(
   error: unknown,
