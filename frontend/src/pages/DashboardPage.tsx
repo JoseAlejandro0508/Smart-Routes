@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Activity, CheckCircle2, ClipboardList, Clock3, RefreshCw } from 'lucide-react'
+import { backendCapabilities, isBackendPending } from '../api/capabilities'
 import { dashboardApi } from '../api/dashboard.api'
 import { useAuth } from '../features/auth/AuthProvider'
 import { ROLE_LABELS } from '../components/layout/navConfig'
@@ -24,11 +25,13 @@ const VISIBLE_KPIS_BY_ROLE: Record<UserRole, Array<(typeof KPI_ITEMS)[number]['k
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const dashboardAvailable = backendCapabilities.dashboardSummary
   const summary = useQuery({
     queryKey: ['dashboard-summary', user?.id],
     queryFn: dashboardApi.getSummary,
-    enabled: Boolean(user),
+    enabled: Boolean(user) && dashboardAvailable,
   })
+  const summaryPending = !dashboardAvailable || isBackendPending(summary.error)
 
   const firstName = user?.name?.split(' ')[0] ?? user?.email
   const visibleItems = useMemo(() => {
@@ -56,7 +59,9 @@ export function DashboardPage() {
                 <Icon className="h-5 w-5" />
               </span>
             </div>
-            {summary.isPending ? (
+            {summaryPending ? (
+              <p className="mt-4 text-sm text-neutral-500">Pendiente de backend</p>
+            ) : summary.isPending ? (
               <div className="mt-4 h-9 w-20 animate-pulse rounded-lg bg-neutral-100" />
             ) : summary.isError ? (
               <p className="mt-4 text-sm text-rose-600">No disponible</p>
@@ -69,7 +74,16 @@ export function DashboardPage() {
         ))}
       </section>
 
-      {summary.isError && (
+      {summaryPending ? (
+        <div
+          role="status"
+          className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700"
+        >
+          El resumen operativo estará disponible cuando el backend exponga{' '}
+          <code className="font-mono text-xs">GET /dashboard/summary</code>. Mientras tanto no se
+          muestran cifras inventadas.
+        </div>
+      ) : summary.isError ? (
         <div role="alert" className="flex items-center justify-between gap-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
           <span>No se pudieron cargar las métricas del día.</span>
           <button
@@ -80,7 +94,7 @@ export function DashboardPage() {
             <RefreshCw className="h-4 w-4" /> Reintentar
           </button>
         </div>
-      )}
+      ) : null}
 
       <section className="rounded-2xl border border-neutral-200 bg-white p-5">
         <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">Sesión actual</p>

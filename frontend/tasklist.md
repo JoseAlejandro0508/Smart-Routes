@@ -4,7 +4,7 @@
 
 - **Rama:** `develop`
 - **Fecha de creación:** 25/11/2026
-- **Progreso:** 4 / 33
+- **Progreso:** 5 / 33
 - **Fuente de verdad del contrato:** `docs/endpoints.md`
 
 ## Leyenda
@@ -101,6 +101,7 @@
 
 ## 5. Resolver dashboard y reportes sin mocks 🟡
 
+- [x] **Completada:** 25/11/2026. Dashboard/reportes muestran “Pendiente de backend” sin llamar endpoints inexistentes; flags en `src/api/capabilities.ts`. Reporte real de entregas por centro se mantiene.
 - Si backend implementa `GET /dashboard/summary` y `GET /reports/{reportId}`, conectarlos.
 - Si no existen: mostrar un estado claro de “Pendiente de backend” y ocultar/deshabilitar selectores que no tengan datos.
 - Mantener el reporte real de “Entregas por centro” (`/delivery/reports/by-center`).

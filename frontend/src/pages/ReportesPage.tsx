@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BarChart3, Download, FileText, PackageCheck, Table2 } from 'lucide-react'
 import { deliveriesApi } from '../api/deliveries.api'
+import { backendCapabilities, isBackendPending } from '../api/capabilities'
 import { reportsApi, type ReportId } from '../api/reports.api'
 import { ReportChart } from '../components/ui/ReportChart'
 import { SortableTable, type SortableRow } from '../components/ui/SortableTable'
@@ -27,7 +28,13 @@ export function ReportesPage() {
   const exportRef = useRef<HTMLDivElement>(null)
 
   const [filters, setFilters] = useState<Record<string, string>>({})
-  const report = useQuery({ queryKey: ['report', reportId], queryFn: () => reportsApi.get(reportId) })
+  const reportsAvailable = backendCapabilities.reports
+  const report = useQuery({
+    queryKey: ['report', reportId],
+    queryFn: () => reportsApi.get(reportId),
+    enabled: reportsAvailable,
+  })
+  const reportsPending = !reportsAvailable || isBackendPending(report.error)
   const canViewDeliveryReports = user?.role === 'Administrator' || user?.role === 'OperationsSupervisor' || user?.role === 'LogisticsCoordinator'
   const deliveryReports = useQuery({
     queryKey: ['delivery-reports-by-center'],
@@ -79,7 +86,7 @@ export function ReportesPage() {
             Consulta resultados operativos, ordénalos y expórtalos para su revisión.
           </p>
         </div>
-        {report.data && (
+        {reportsAvailable && report.data && (
           <button
             type="button"
             onClick={handleExport}
@@ -135,50 +142,52 @@ export function ReportesPage() {
         </section>
       )}
 
-      <div className="flex flex-wrap items-end gap-4">
-        <label className="block w-full max-w-xl text-sm font-medium text-neutral-700">
-          Reporte a consultar
-          <select
-            value={reportId}
-            onChange={(event) => {
-              setReportId(event.target.value as ReportId)
-              setSortedRows([])
-            }}
-            className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 bg-white px-3.5 outline-none focus:border-neutral-500"
-          >
-            {reportOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {report.data && (
-          <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-1" role="tablist" aria-label="Vista del reporte">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'table'}
-              onClick={() => setView('table')}
-              className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${view === 'table' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}
+      {reportsAvailable && !reportsPending && (
+        <div className="flex flex-wrap items-end gap-4">
+          <label className="block w-full max-w-xl text-sm font-medium text-neutral-700">
+            Reporte a consultar
+            <select
+              value={reportId}
+              onChange={(event) => {
+                setReportId(event.target.value as ReportId)
+                setSortedRows([])
+              }}
+              className="mt-1.5 h-11 w-full rounded-lg border border-neutral-200 bg-white px-3.5 outline-none focus:border-neutral-500"
             >
-              <Table2 className="h-4 w-4" /> Tabla
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'chart'}
-              onClick={() => setView('chart')}
-              className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${view === 'chart' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}
-            >
-              <BarChart3 className="h-4 w-4" /> Gráfico
-            </button>
-          </div>
-        )}
-      </div>
+              {reportOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      {report.data && (
+          {report.data && (
+            <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-1" role="tablist" aria-label="Vista del reporte">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === 'table'}
+                onClick={() => setView('table')}
+                className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${view === 'table' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}
+              >
+                <Table2 className="h-4 w-4" /> Tabla
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === 'chart'}
+                onClick={() => setView('chart')}
+                className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${view === 'chart' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}
+              >
+                <BarChart3 className="h-4 w-4" /> Gráfico
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {reportsAvailable && report.data && (
         <div className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:grid-cols-3">
           <label className="text-sm font-medium text-neutral-700">Filtro por centro
             <input value={filters.center ?? ''} onChange={(e) => setFilters((f) => ({ ...f, center: e.target.value }))} placeholder="Ej. Centro Habana" className="mt-1.5 h-10 w-full rounded-lg border border-neutral-200 px-3 font-normal outline-none focus:border-neutral-500" />
@@ -193,7 +202,16 @@ export function ReportesPage() {
         </div>
       )}
 
-      {report.isPending ? (
+      {reportsPending ? (
+        <div role="status" className="rounded-2xl border border-neutral-200 bg-neutral-50 p-10 text-center">
+          <p className="font-semibold text-neutral-900">Reportes pendientes de backend</p>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-neutral-600">
+            Los seis reportes estarán disponibles cuando el backend exponga{' '}
+            <code className="font-mono text-xs">GET /reports/{'{reportId}'}</code>. Mientras tanto
+            se mantiene el reporte real de entregas por centro.
+          </p>
+        </div>
+      ) : report.isPending ? (
         <div className="rounded-2xl border border-neutral-200 bg-white p-10 text-center text-sm text-neutral-500">
           Generando reporte…
         </div>
