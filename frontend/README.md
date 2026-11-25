@@ -11,6 +11,8 @@ Frontend de Smart Routes: gestión de pedidos, generación y validación de ruta
 
 La capa de red opera sobre una **API simulada con MSW (Mock Service Worker)** que actúa como *contrato ejecutable*: define de forma tipada los endpoints, payloads y códigos de estado que el backend real debe implementar. El frontend no requiere modificaciones para migrar a la API definitiva.
 
+> **Contrato real del backend:** [`docs/endpoints.md`](../docs/endpoints.md). Este README todavía describe la etapa con MSW; la limpieza de mocks y la actualización completa del README están planificadas en [`tasklist.md`](tasklist.md).
+
 ---
 
 ## Índice

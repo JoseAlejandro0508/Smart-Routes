@@ -63,8 +63,26 @@ export interface CreateOrderPayload {
 export const ordersApi = {
   /** Lista pedidos aplicando filtros y paginación del backend. */
   async list(params: ListOrdersParams = {}): Promise<OrdersPage> {
-    const { data } = await http.get<OrdersPage>('/orders', { params })
-    return data
+    const response = await http.get<Order[] | OrdersPage>('/orders', { params })
+    const { data, headers } = response
+
+    // El backend real devuelve un array y los totales en cabeceras. Se mantiene
+    // también la forma paginada anterior para no romper mientras se elimina el
+    // mock de ejecución (tarea 3).
+    if (!Array.isArray(data)) return data
+
+    const numericHeader = (name: string) => {
+      const value = headers[name]
+      const parsed = typeof value === 'string' ? Number(value) : Number.NaN
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+    }
+
+    return {
+      items: data,
+      pageNumber: numericHeader('x-page-number') ?? params.pageNumber ?? 1,
+      pageSize: numericHeader('x-page-size') ?? params.pageSize ?? 20,
+      totalCount: numericHeader('x-total-count') ?? data.length,
+    }
   },
 
   /** Registra un pedido y devuelve su identificador. */
