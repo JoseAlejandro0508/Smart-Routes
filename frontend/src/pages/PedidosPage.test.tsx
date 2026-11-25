@@ -1,20 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { tokenStore } from '../api/http'
-import { ordersHandlers } from '../mocks/handlers/orders'
-import { stopsHandlers } from '../mocks/handlers/stops'
-import { mockState } from '../mocks/state'
-import { tokensFor } from '../mocks/shared'
+import { resetTestDb, testDb } from '../test/handlers/data'
+import { TEST_ACCESS_TOKEN, TEST_REFRESH_TOKEN } from '../test/handlers/shared'
+import { server } from '../test/server'
 import { PedidosPage } from './PedidosPage'
 
 const auth = vi.hoisted(() => ({
   user: {
-    id: 'usr_01',
-    name: 'Ana Demo',
-    email: 'ana@demo.dev',
+    id: 'test-coordinator',
+    name: 'Coordinador de prueba',
+    email: 'coordinator@test.dev',
     role: 'LogisticsCoordinator',
   },
   isInitializing: false,
@@ -24,16 +22,12 @@ vi.mock('../features/auth/AuthProvider', () => ({
   useAuth: () => auth,
 }))
 
-const server = setupServer(...ordersHandlers, ...stopsHandlers)
-const originalOrders = [...mockState.orders]
-
-beforeAll(() => server.listen())
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
 afterAll(() => server.close())
 
 beforeEach(() => {
-  mockState.orders = [...originalOrders]
-  const { accessToken, refreshToken } = tokensFor('usr_01')
-  tokenStore.set(accessToken, refreshToken)
+  resetTestDb()
+  tokenStore.set(TEST_ACCESS_TOKEN, TEST_REFRESH_TOKEN)
 })
 
 afterEach(() => {
@@ -88,7 +82,9 @@ describe('PedidosPage', () => {
     )
 
     expect(await screen.findByText(/Pedido de prueba/)).toBeInTheDocument()
-    expect(mockState.orders[0]?.description).toBe('Pedido de prueba')
-    expect(mockState.orders[0]?.zoneName).toBe('Centro')
+    expect(testDb.orders[0]).toMatchObject({
+      description: 'Pedido de prueba',
+      zoneName: 'Centro',
+    })
   })
 })

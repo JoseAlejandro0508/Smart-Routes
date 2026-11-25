@@ -1,19 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { tokenStore } from '../api/http'
-import { routesHandlers } from '../mocks/handlers/routes'
-import { mockState } from '../mocks/state'
-import { tokensFor } from '../mocks/shared'
+import { resetTestDb, testDb } from '../test/handlers/data'
+import { TEST_ACCESS_TOKEN, TEST_REFRESH_TOKEN } from '../test/handlers/shared'
+import { server } from '../test/server'
 import { RutasPage } from './RutasPage'
 
 const auth = vi.hoisted(() => ({
   user: {
-    id: 'usr_03',
-    name: 'Sofía Demo',
-    email: 'sofia@demo.dev',
+    id: 'test-supervisor',
+    name: 'Supervisor de prueba',
+    email: 'supervisor@test.dev',
     role: 'OperationsSupervisor',
   },
   isInitializing: false,
@@ -23,16 +22,12 @@ vi.mock('../features/auth/AuthProvider', () => ({
   useAuth: () => auth,
 }))
 
-const server = setupServer(...routesHandlers)
-
-beforeAll(() => server.listen())
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
 afterAll(() => server.close())
 
 beforeEach(() => {
-  ;(mockState as any).routeReviews[201] = 'Pending'
-  ;(mockState as any).routeReviews[202] = 'Approved'
-  const { accessToken, refreshToken } = tokensFor('usr_03')
-  tokenStore.set(accessToken, refreshToken)
+  resetTestDb()
+  tokenStore.set(TEST_ACCESS_TOKEN, TEST_REFRESH_TOKEN)
 })
 
 afterEach(() => {
@@ -79,7 +74,7 @@ describe('RutasPage (supervisor)', () => {
 
     await waitFor(
       () => {
-        expect((mockState as any).routeReviews[201]).toBe('Rejected')
+        expect(testDb.reviews[201]).toBe('Rejected')
       },
       { timeout: 5000 },
     )

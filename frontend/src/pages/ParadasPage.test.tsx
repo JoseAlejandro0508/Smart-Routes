@@ -1,38 +1,19 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { setupServer } from 'msw/node'
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { tokenStore } from '../api/http'
-import { stopsHandlers } from '../mocks/handlers/stops'
-import { mockState } from '../mocks/state'
-import { tokensFor } from '../mocks/shared'
+import { resetTestDb, testDb } from '../test/handlers/data'
+import { TEST_ACCESS_TOKEN, TEST_REFRESH_TOKEN } from '../test/handlers/shared'
+import { server } from '../test/server'
 import { ParadasPage } from './ParadasPage'
 
-const auth = vi.hoisted(() => ({
-  user: {
-    id: 'usr_01',
-    name: 'Ana Demo',
-    email: 'ana@demo.dev',
-    role: 'LogisticsCoordinator',
-  },
-  isInitializing: false,
-}))
-
-vi.mock('../features/auth/AuthProvider', () => ({
-  useAuth: () => auth,
-}))
-
-const server = setupServer(...stopsHandlers)
-const originalStops = [...mockState.stops]
-
-beforeAll(() => server.listen())
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
 afterAll(() => server.close())
 
 beforeEach(() => {
-  mockState.stops = [...originalStops]
-  const { accessToken, refreshToken } = tokensFor('usr_01')
-  tokenStore.set(accessToken, refreshToken)
+  resetTestDb()
+  tokenStore.set(TEST_ACCESS_TOKEN, TEST_REFRESH_TOKEN)
 })
 
 afterEach(() => {
@@ -70,7 +51,7 @@ describe('ParadasPage', () => {
       { timeout: 5000 },
     )
 
-    expect(mockState.stops[0]).toMatchObject({
+    expect(testDb.stops[0]).toMatchObject({
       address: 'Calle Nueva 99',
       zoneId: 2,
       zoneName: 'Vedado',

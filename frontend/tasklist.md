@@ -4,7 +4,7 @@
 
 - **Rama:** `develop`
 - **Fecha de creación:** 25/11/2026
-- **Progreso:** 1 / 33
+- **Progreso:** 2 / 33
 - **Fuente de verdad del contrato:** `docs/endpoints.md`
 
 ## Leyenda
@@ -73,6 +73,7 @@
 
 ## 2. Migrar los tests fuera de `src/mocks` 🟢
 
+- [x] **Completada:** 25/11/2026. Los tests usan `src/test/handlers/` y `src/test/server.ts`; sin imports de `src/mocks`.
 - Crear `frontend/src/test/handlers/` con handlers que reflejen el backend real.
 - Reescribir `PedidosPage.test.tsx`, `ParadasPage.test.tsx` y `RutasPage.test.tsx`.
 - Quitar imports de `mockState`, `tokensFor` y `src/mocks/*`.
