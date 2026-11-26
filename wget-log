@@ -1,0 +1,4 @@
+--2026-11-25 20:56:23--  https://dot.net/v1/dotnet-install.sh
+Loaded CA certificate '/etc/ssl/certs/ca-certificates.crt'
+Resolving dot.net (dot.net)... 20.70.246.20, 20.236.44.162, 20.231.239.246, ...
+Connecting to dot.net (dot.net)|20.70.246.20|:443... connected.

@@ -4,7 +4,7 @@
 
 - **Rama:** `develop`
 - **Fecha de creación:** 25/11/2026
-- **Progreso:** 5 / 33
+- **Progreso:** 6 / 33
 - **Fuente de verdad del contrato:** `docs/endpoints.md`
 
 ## Leyenda
@@ -128,6 +128,7 @@
 
 ## 8. Pedidos: array + cabeceras de paginación 🟢
 
+- [x] **Completada:** 26/11/2026. `ordersApi.list` construye `OrdersPage` desde array+cabeceras; `ordersApi.create` devuelve `Order`.
 - El backend devuelve `OrderResponse[]` y la paginación en `X-Total-Count`, `X-Page-Number`, `X-Page-Size`.
 - Cambiar `ordersApi.list` para construir `OrdersPage` desde `response.data` y `response.headers`.
 - Cambiar `ordersApi.create` para devolver `Order` en vez de `number`.

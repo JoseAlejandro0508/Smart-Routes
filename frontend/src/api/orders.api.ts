@@ -85,9 +85,9 @@ export const ordersApi = {
     }
   },
 
-  /** Registra un pedido y devuelve su identificador. */
-  async create(payload: CreateOrderPayload): Promise<number> {
-    const { data } = await http.post<number>('/orders', payload)
+  /** Registra un pedido y devuelve el pedido creado. */
+  async create(payload: CreateOrderPayload): Promise<Order> {
+    const { data } = await http.post<Order>('/orders', payload)
     return data
   },
 }
